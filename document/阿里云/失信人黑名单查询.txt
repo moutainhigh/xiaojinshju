@@ -1,0 +1,46 @@
+调用地址：http(s)://blacklist.market.alicloudapi.com/apixcredit/blacklist/dishonest
+
+请求方式：GET
+
+返回类型：JSON
+
+请求参数（Query）
+名称	类型	是否必须	描述
+cardno	STRING	必选	个人公民身份号码或机构营业执照编号
+name	STRING	必选	个人或企业名称
+phoneNo	STRING	可选	手机号或电话号码
+type	STRING	必选	选择查询个人还是企业，person表示个人，company表示公司
+
+正常返回示例
+{
+  "msg": "请求成功",
+  "code": 0,
+  "data": [
+    {
+      "duty": "被告李尚钟于本判决生效后十日内偿还欠原告的借款208000元，利息33696元，合计241696元。",
+      "disrupt_type": "其它规避执行,违反财产报告制度",
+      "code": "(2010)宁执字第00099号",
+      "sex": "男",
+      "pub_time": "2013年10月11日",
+      "court": "宁洱哈尼族彝族自治县人民法院",
+      "name": "李尚钟",
+      "area": "云南",
+      "age": "38",
+      "performance": "部分未履行",
+      "idcardno": "53272219751****0914"
+    },
+    {
+      "duty": "由被告李尚钟支付原告李东华借款205300元，并支付违约金43770元，合计349070元。",
+      "disrupt_type": "违反财产报告制度,其他有履行能力而拒不履行生效法律文书确定义务",
+      "code": "(2011)宁执字第00079号",
+      "sex": "男",
+      "pub_time": "2013年10月11日",
+      "court": "宁洱哈尼族彝族自治县人民法院",
+      "name": "李尚钟",
+      "area": "云南",
+      "age": "38",
+      "performance": "全部未履行",
+      "idcardno": "53272219751****0914"
+    }
+  ]
+}

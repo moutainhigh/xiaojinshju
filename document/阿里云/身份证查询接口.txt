@@ -1,0 +1,23 @@
+调用地址：http://jisuidcard.market.alicloudapi.com/idcard/query
+
+请求方式：GET
+
+返回类型：JSON
+
+请求参数（Query）
+名称	类型	是否必须	描述
+idcard	STRING	必选	身份证或身份证前6位
+
+正常返回示例
+{
+    "status": "0",
+    "msg": "ok",
+    "result": {
+        "province": "河南省",
+        "city": "周口市",
+        "town": "鹿邑县",
+        "lastflag": "0",
+        "sex": "男",
+        "birth": "1980年01月02日"
+    }
+}

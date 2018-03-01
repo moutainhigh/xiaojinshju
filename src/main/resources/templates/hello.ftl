@@ -1,0 +1,1343 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Style-Type" content="text/css"/>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: SimSun;
+        }
+
+        .container {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            z-index: 1;
+            background-image: url(img/11111.png);
+            overflow-x: hidden
+        }
+
+        .left_box, .right_box {
+            font-size: xx-small;
+        }
+
+        .center_box {
+            font-size: xx-small;
+        }
+
+        hr {
+            margin-top: 7px;
+            margin: 0;
+            border: 0;
+            color: black;
+            background-color: black;
+            height: 2px;
+        }
+
+        .header_right {
+            display: inline-block;
+            float: right;
+            margin-left: 50px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .person {
+            border-left: 3px solid blue;
+            padding-left: 10px;
+            margin-left: 2.5%;
+        }
+
+        .person p {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .person_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            font-size: 14px;
+        }
+
+        table.person_table {
+            border-style: dashed;
+            border-width: 1px 0 0 1px;
+            border-color: #666;
+        }
+
+        table.person_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.person_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .risk_div p {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .credit {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .credit .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .credit .two {
+            font-size: 12px;
+        }
+
+        .appraise {
+            width: 95%;
+            height: 60px;
+            border: 1px dashed #2F4F4F;
+            background-color: #dbdbdb;
+            margin-top: 20px;
+            margin-left: 2.5%;
+            line-height: 45px;
+        }
+
+        .appraise img {
+            vertical-align: middle;
+            margin-left: 13px;
+        }
+
+        .appraise > span {
+            font-size: 14px;
+            padding-left: 5px;
+        }
+
+        .identity {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .identity .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .identity .two {
+            font-size: 12px;
+        }
+
+        .identity_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.identity_table td {
+            padding: 0.3em 1em;
+        }
+
+        table.identity_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.identity_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.identity_table .color {
+            background-color: #DADADA;
+            font-weight: bold;
+        }
+
+        .education {
+            border-left: 3px solid blue;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 10px;
+        }
+
+        .education .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .education .two {
+            font-size: 12px;
+        }
+
+        .education_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        table.education_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.education_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.education_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.education_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .riches {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 10px;
+        }
+
+        .riches .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .riches .two {
+            font-size: 12px;
+        }
+
+        .riches_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            text-overflow: ellipsis;
+            width: 95%;
+            border: 0;
+            margin-top: 8px;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        table.riches_table th, td {
+            padding: 0.3em 1em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        table.riches_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.riches_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.riches_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .consume {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .consume .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .consume .two {
+            font-size: 12px;
+        }
+
+        .consume_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        table.consume_table th, td {
+            padding: 0.3em 1em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.consume_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.consume_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.consume_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        .address {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 10px;
+        }
+
+        .address .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .address .two {
+            font-size: 12px;
+        }
+
+        .address_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        table.address_table th, td {
+            padding: 0.3em 1em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.address_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.address_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.address_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        .loans {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .loans .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .loans .two {
+            font-size: 12px;
+        }
+
+        .loans_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.loans_table th, td {
+            padding: 0.3em 1em;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.loans_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.loans_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.loans_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .overdue {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .overdue .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .overdue .two {
+            font-size: 12px;
+        }
+
+        .overdue_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        table.overdue_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.overdue_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.overdue_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.overdue_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .potential {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .potential .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .potential .two {
+            font-size: 12px;
+        }
+
+        .potential_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        table.potential_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.potential_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.potential_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.potential_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .violation {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .violation .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .violation .two {
+            font-size: 12px;
+        }
+
+        .violation_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.violation_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.violation_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.violation_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.violation_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        .court {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .court .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .court .two {
+            font-size: 12px;
+        }
+
+        .court_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        table.court_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.court_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.court_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.court_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        .criminal {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .criminal .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .criminal .two {
+            font-size: 12px;
+        }
+
+        .criminal_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        table.criminal_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.criminal_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.criminal_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.criminal_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .judge {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .judge .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .judge .two {
+            font-size: 12px;
+        }
+
+        .judge_p {
+            width: 95%;
+            min-height: 200px;
+            border: 1px dashed #2F4F4F;
+            background-color: #dbdbdb;
+            margin-top: 20px;
+            margin-left: 2.5%;
+            line-height: 25px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        .judge_p p {
+            font-size: 14px;
+            /*padding-left: 50px;*/
+            word-break: break-all;
+            word-wrap: break-word;
+            text-align: center;
+        }
+
+        .judge_p ul {
+            list-style: square inside url('/Users/ginger/svn/xiaojinshuju/src/main/resources/templates/img/list.png');
+            margin-top: 10px;
+            font-size: 10px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        .social {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 10px;
+        }
+
+        .social .one {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .social .two {
+            font-size: 12px;
+        }
+
+        .social_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 8px;
+            font-size: 14px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        table.social_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.social_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.social_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.social_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+
+        .records {
+            border-left: 3px solid green;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 10px;
+        }
+
+        .records .one {
+            font-size: small;
+            font-weight: bold;
+        }
+
+        .records .two {
+            font-size: 12px;
+        }
+
+        .records_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+
+            width: 95%;
+            border: 0;
+            margin-top: 8px;
+
+            font-size: 14px;
+        }
+
+        table.records_table th, td {
+            padding: 0.3em 1em;
+
+        }
+
+        table.records_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <h1>个人综合信用报告</h1>
+
+    <span class="left_box">报告编号：${reportId}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <span class="center_box">数据查询时间：${createAt}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <span class="right_box">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;报告生成时间：${.now}</span>
+
+    <hr width="98%"/>
+    <div class="person"><p>个人信息</p></div>
+    <table class="person_table">
+        <tr>
+            <td width="25%" class="color">姓名</td>
+            <td width="25%">${idCardVO.name}</td>
+            <td width="20%" class="color">性别</td>
+            <td width="30%">${idCardVO.sex}</td>
+
+        </tr>
+        <tr>
+            <td class="color">身份证号码</td>
+            <td>${idCardVO.idCard}</td>
+            <td class="color">年龄</td>
+            <td>${idCardVO.age}</td>
+        </tr>
+        <tr>
+            <td class="color">联系电话</td>
+            <td>${idCardVO.mobile}</td>
+            <td class="color">银行卡号</td>
+            <td>${idCardVO.bankCard}</td>
+        </tr>
+        <tr>
+            <td class="color">出生地</td>
+            <td>${idCardVO.province}省&nbsp;${idCardVO.city}市&nbsp;${idCardVO.town}</td>
+            <td class="color">地址</td>
+            <td>${idCardVO.address}</td>
+        </tr>
+    </table>
+
+
+    <div class="credit">
+        <span class="one">芝麻信用</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;蚂蚁金服旗下独立的第三方征信机构</span>
+    </div>
+    <div class="appraise">
+        <span>芝麻信用评价分&nbsp;&nbsp;&nbsp;</span><strong>${zhimaScoreVO.score}</strong>
+    </div>
+
+    <div class="identity">
+        <span class="one">身份校验</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;手机号、姓名、身份证、银行卡等校验</span>
+    </div>
+    <table class="identity_table">
+        <tr>
+            <td width="20%" class="color">三要素校验</td>
+            <td width="80%">${idCheckVO.nmPhCn}</td>
+
+
+        </tr>
+        <tr>
+            <td class="color">常用地址</td>
+            <td>${idCheckVO.adCn}</td>
+
+        </tr>
+        <tr>
+            <td class="color">银行卡认证</td>
+            <td>${idCheckVO.bcCn}</td>
+
+        </tr>
+    </table>
+
+<#if educationVO?? >
+
+    <div class="education">
+        <span class="one">学历信息</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;毕业院校、学历、专业等信息查询</span>
+    </div>
+    <#if educationVO.name??>
+    <table class="education_table">
+        <tr>
+            <td width="25%" class="color">姓名</td>
+            <td width="25%">${educationVO.name}</td>
+            <td width="20%" class="color">学历</td>
+            <td width="30%">${educationVO.degree}</td>
+
+        </tr>
+        <tr>
+            <td class="color">学校</td>
+            <td>${educationVO.college}</td>
+            <td class="color">院校类型</td>
+            <td>${educationVO.collegeType}</td>
+        </tr>
+        <tr>
+            <td class="color">毕业时间</td>
+            <td>${educationVO.graduateTime}</td>
+            <td class="color">毕业结论</td>
+            <td>${educationVO.studyResult}</td>
+        </tr>
+    </table>
+    <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+    </#if>
+</#if>
+<#if wealthVO??>
+
+    <div class="riches">
+        <span class="one">财富信息</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;淘宝、支付宝、余额宝、花呗等信息查询</span>
+    </div>
+    <#if wealthVO.name??>
+    <table class="riches_table">
+        <tr>
+            <td width="25%" class="color">姓名</td>
+            <td width="25%">${wealthVO.name}</td>
+            <td width="20%" class="color">淘宝昵称</td>
+            <td width="30%">${wealthVO.taobaoNickName}</td>
+        </tr>
+        <tr>
+            <td class="color">淘宝VIP等级</td>
+            <td>${wealthVO.taobaoVIP}</td>
+            <td class="color">淘宝成长值</td>
+            <td>${wealthVO.taobaoGrowth}</td>
+        </tr>
+        <tr>
+            <td class="color">绑定手机号</td>
+            <td>${wealthVO.mobile}</td>
+            <td class="color">绑定支付宝账号</td>
+            <td>${wealthVO.alipayAccount}</td>
+        </tr>
+        <tr>
+            <td class="color">支付宝余额</td>
+            <td>${wealthVO.alipayBalance}</td>
+            <td class="color">余额宝余额</td>
+            <td>${wealthVO.yuebaoBalance}</td>
+        </tr>
+        <tr>
+            <td class="color">花呗授信额度</td>
+            <td>${wealthVO.antCheckLaterCreditLine}</td>
+            <td class="color">花呗可用额度</td>
+            <td>${wealthVO.antCheckLaterAvailableCredit}</td>
+        </tr>
+    </table>
+    <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+    </#if>
+</#if>
+<#if consumeVO??>
+
+    <div class="consume">
+        <span class="one">消费分析</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;淘宝月度消费情况、及近期订单</span>
+    </div>
+    <#if consumeVO.consumeOrders??>
+    <table class="consume_table">
+        <tr>
+            <td width="30%" class="color">月份</td>
+            <td width="30%" class="color">消费金额（元）</td>
+            <td width="60%" class="color">消费次数</td>
+        </tr>
+        <#list consumeVO.consumeOrders as item>
+        <tr>
+            <td>${item.datetime}</td>
+            <td>${item.money}</td>
+            <td>${item.event}</td>
+        </tr>
+        </#list>
+    </table>
+    <#else>
+    <div class="appraise">
+        在本数据库中未查到
+    </div>
+    </#if>
+</#if>
+
+    <!-- 真实地址 -->
+<#if deliverAddressVO??>
+    <div class="address">
+        <span class="one">真实地址</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;淘宝收货人姓名、地址、联系方式</span>
+    </div>
+    <#if deliverAddressVO.deliverAddresses?size gt 0>
+<table class="address_table">
+    <tr>
+        <td width="10%" class="color">姓名</td>
+        <td width="10%" class="color">电话</td>
+        <td width="10%" class="color">邮编</td>
+        <td width="35%" class="color">地址</td>
+        <td width="25%" class="color">备注</td>
+    </tr>
+        <#list deliverAddressVO.deliverAddresses as item>
+        <tr>
+            <td>${item.name}</td>
+            <td>${item.phone}</td>
+            <td>${item.zipCode}</td>
+            <td>${item.address}</td>
+            <td>${item.defaultAddress}</td>
+        </tr>
+        </#list>
+</table>
+    <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+    </#if>
+</#if>
+
+
+<#if multipleHeadLendVO??>
+    <div class="loans">
+        <span class="one">多头借贷</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;验证是否命中网贷注册、申请、逾期失信黑名单</span>
+    </div>
+    <#if multipleHeadLendVO.multipleHeadLends?size gt 0>
+
+    <table class="loans_table">
+
+        <tr>
+            <td width="40%" class="color">所属事件类型</td>
+            <td width="60%" class="color">命中事件</td>
+        </tr>
+            <#list multipleHeadLendVO.multipleHeadLends as item>
+        <tr>
+            <td>${item.type}</td>
+            <td>${item.content}</td>
+        </tr>
+            </#list>
+    </table>
+    <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+    </#if>
+</#if>
+
+
+<#if overdueCreditVO??>
+    <div class="overdue">
+        <span class="one">信贷逾期</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;银行、P2P、网贷各行业的黑名单、包括逾期、不良、失联等等</span>
+    </div>
+    <#if overdueCreditVO.overdueCredits?size gt 0>
+    <table class="overdue_table">
+        <tr>
+            <td width="25%" class="color">所属事件类型</td>
+            <td width="75%" class="color">命中事件</td>
+        </tr>
+        <#list overdueCreditVO.overdueCredits as item></#list>
+        <tr>
+            <td>${item.type}</td>
+            <td>${item.content}</td>
+        </tr>
+    </table>
+    <#else >
+        <div class="appraise">
+            在本数据库中未查到
+        </div>
+    </#if>
+</#if>
+
+
+<#if fraudVO??>
+    <div class="potential">
+        <span class="one">潜在风险</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;基于腾讯大数据</span>
+    </div>
+    <#if fraudVO.frauds?size gt 0>
+    <table class="potential_table">
+        <tr>
+            <td width="25%" class="color">所属事件类型</td>
+            <td width="75%" class="color">命中事件</td>
+        </tr>
+        <#list fraudVO.frauds as item>
+        <tr>
+            <td>${item.type}</td>
+            <td>${item.content}</td>
+        </tr>
+        </#list>
+    </table>
+    <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+    </#if>
+</#if>
+
+<#if violationVO??>
+    <div class="violation">
+        <span class="one">车辆违章</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;车辆当前违章情况</span>
+    </div>
+
+    <#if violationVO.violationSet?size gt 0>
+
+    <table class="violation_table">
+        <tr>
+            <td width="10%" class="color">时间</td>
+            <td width="10%" class="color">扣分</td>
+            <td width="10%" class="color">扣款</td>
+
+            <td width="20%" class="color">地点</td>
+            <td width="20%" class="color">违章内容</td>
+        </tr>
+        <#list violationVO.violationSet as item>
+        <tr>
+            <td>${item.time}</td>
+            <td>${item.score}</td>
+            <td>${item.fine}</td>
+
+            <td>${item.address}</td>
+            <td>${item.reason}</td>
+        </tr>
+        </#list>
+    </table>
+    <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+    </#if>
+</#if>
+
+
+
+<#if dishonestBlackVO??>
+    <div class="court">
+        <span class="one">法院失信</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+    <#if dishonestBlackVO.dishonestBlackList??>
+        <#if dishonestBlackVO.dishonestBlackList?size gt 0>
+            <#list dishonestBlackVO.dishonestBlackList as item>
+         <table class="court_table">
+             <tr>
+                 <td width="25%" class="color">生效义务</td>
+                 <td width="75%">${item.duty}</td>
+             </tr>
+             <tr>
+                 <td class="color">具体情形</td>
+                 <td>${item.disruptType}</td>
+             </tr>
+             <tr>
+                 <td class="color">依据文号</td>
+                 <td>${item.code}</td>
+             </tr>
+             <tr>
+                 <td class="color">公告日期</td>
+                 <td>${item.pubTime}</td>
+             </tr>
+             <tr>
+                 <td class="color">执行法院</td>
+                 <td>${item.court}</td>
+             </tr>
+             <tr>
+                 <td class="color">执行省份</td>
+                 <td>${item.area}</td>
+             </tr>
+             <tr>
+                 <td class="color">履行情况</td>
+                 <td>${item.performance}</td>
+             </tr>
+         </table>
+            </#list>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+
+</#if>
+    <!-- 刑事犯罪 -->
+    <#if criminalVO??>
+    <div class="criminal">
+        <span class="one">刑事犯罪</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+        <#if criminalVO.criminalList?size gt 0>
+            <#list criminalVO.criminalList as item>
+    <table class="criminal_table">
+        <tr>
+            <td width="25%" class="color">涉案类型</td>
+            <td width="75%">${item.caseSource}</td>
+        </tr>
+        <tr>
+            <td class="color">案件类型</td>
+            <td>${item.crimeType}</td>
+        </tr>
+        <tr>
+            <td class="color">案件等级</td>
+            <td>${item.caseLevel}</td>
+        </tr>
+        <tr>
+            <td class="color">刑罚时长</td>
+            <td>${item.casePeriod}</td>
+        </tr>
+        <tr>
+            <td class="color">案件来源</td>
+            <td>${item.caseSource}</td>
+        </tr>
+    </table>
+            </#list>
+        <#else >
+        <div class="appraise">
+            在本数据库中未查到
+        </div>
+        </#if>
+    </#if>
+
+
+    <#if courtJudgmentVO??>
+    <div class="judge">
+        <span class="one">法院判决</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;包括裁判文书类型、法院、地区、案由、判决结果等信息</span>
+    </div>
+        <#if courtJudgmentVO.courJudgmentList?size gt 0>
+            <#list courtJudgmentVO.courJudgmentList as item>
+    <div class="judge_p">
+        <p>
+            ${item.judgeResult}
+        </p>
+    </div>
+            </#list>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+
+<#if socialContactVO??>
+<div class="social">
+    <span class="one">社交分析</span>
+    <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;关机情况、互通号码、活跃区域等信息</span>
+</div>
+<table class="social_table">
+    <tr>
+        <td width="25%" class="color">子女</td>
+        <td width="75%"><br/>
+            <#if socialContactVO.linkmanChecks?? && socialContactVO.linkmanChecks?size gt 0>
+                <#list socialContactVO.linkmanChecks as item>
+                    <#if item.relationship=='子女'>
+                        ${item.contactName}&nbsp;&nbsp;&nbsp;${item.cellPhone}<br/>
+                        ${item.checkMobile},${item.checkXiaohao}<br/>
+                    </#if>
+                </#list>
+            </#if>
+        </td>
+    </tr>
+    <tr>
+        <td class="color">朋友</td>
+        <td><#if socialContactVO.linkmanChecks?? && socialContactVO.linkmanChecks?size gt 0>
+            <#list socialContactVO.linkmanChecks as item>
+                <#if item.relationship=='朋友'>
+                    ${item.contactName}&nbsp;&nbsp;&nbsp;${item.cellPhone}<br/>
+                    ${item.checkMobile},${item.checkXiaohao}<br/>
+                </#if>
+            </#list>
+        </#if></td>
+    </tr>
+    <tr>
+        <td class="color">社交情况</td>
+        <td>${socialContactVO.contactEachOther}</td>
+    </tr>
+    <tr>
+        <td class="color">关机情况</td>
+        <td>${socialContactVO.phoneSilent}</td>
+    </tr>
+</table>
+<#else >
+<div class="appraise">
+    在本数据库中未查到
+</div>
+</#if>
+
+    <#if callListVO??>
+    <div class="records">
+        <span class="one">通话记录</span>
+        <span class="two">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;关机情况、互通号码、活跃区域等信息</span>
+    </div>
+        <#if callListVO.callList?? && callListVO.callList?size gt 0>
+    <table class="records_table">
+        <tr>
+            <td width="10%" class="color">主叫</td>
+            <td width="10%" class="color">被叫</td>
+            <td width="25%" class="color">号码</td>
+            <td width="10%" class="color">城市</td>
+            <td width="25%" class="color">公司</td>
+            <td width="20%" class="color">通话时长(s)</td>
+        </tr>
+    <#list callListVO.callList as call>
+    <tr>
+        <td>${call.dialCnt}</td>
+        <td>${call.dialedCnt}</td>
+        <td>${call.peerNum}</td>
+        <td>${call.city}</td>
+        <td>${call.companyName}</td>
+        <td>${call.callTime}</td>
+    </tr>
+    </#list>
+    </table>
+        <#else >
+    <div class="appraise">
+        在本数据库中未查到
+    </div>
+        </#if>
+    </#if>
+</div>
+</body>
+</html>

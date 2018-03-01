@@ -1,0 +1,266 @@
+package fengkongweishi.controller;
+
+import fengkongweishi.entity.company.Company;
+import fengkongweishi.entity.company.CompanyRepository;
+import fengkongweishi.entity.company.CompanyVO;
+import fengkongweishi.entity.companyremainderlog.CompanyRemainderLog;
+import fengkongweishi.entity.companyremainderlog.CompanyRemainderLogRepository;
+import fengkongweishi.entity.companyverification.CompanyVerification;
+import fengkongweishi.entity.companyverification.CompanyVerificationRepository;
+import fengkongweishi.entity.companyverification.CompanyVerificationVO;
+import fengkongweishi.entity.role.Role;
+import fengkongweishi.entity.user.User;
+import fengkongweishi.entity.user.UserRepository;
+import fengkongweishi.enums.*;
+import fengkongweishi.service.CompanyService;
+import fengkongweishi.service.ParameterService;
+import fengkongweishi.util.Common;
+import fengkongweishi.util.FailResponse;
+import fengkongweishi.util.ResponseBody;
+import fengkongweishi.util.ValidUtils;
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+@RestController
+@RequestMapping(value = "/admin")
+public class AdminController {
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    CompanyRepository companyRepository;
+
+    @Autowired
+    CompanyVerificationRepository companyVerificationRepository;
+
+    @Autowired
+    CompanyService companyService;
+
+    @Autowired
+    ParameterService parameterService;
+
+    @Autowired
+    private CompanyRemainderLogRepository companyRemainderLogRepository;
+
+    @RequestMapping(value = "/companyVerify/{id}",method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseBody companyVerify(@PathVariable Integer id, @Valid VerifyResult verifyResult, BindingResult result){
+        if(result.hasErrors()){
+            return ValidUtils.getFirstErrorInfo(result);
+        }
+        if(!verifyResult.result && StringUtils.isEmpty(verifyResult.getReason())){
+            throw new FailResponse(ExceptionEnum.COMPANY_VERIFYING_RESULT_REASON_ERROR);
+        }
+        Common.UserDetailsImpl currentUser = Common.getPrincipal();
+        if(currentUser == null) {
+            throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
+        }
+        CompanyVerification companyVerification = companyVerificationRepository.findOne(id);
+        Company company = companyVerification.getCompany();
+        Date date = new Date();
+        if(ApplyTypeEnum.AUTHENTICATION.equals(companyVerification.getApplyType())){
+            if(!CompanyStatusEnum.VERIFYING.equals(company.getStatus())){
+                throw new FailResponse(ExceptionEnum.COMPANY_STATUE_ERRROR);
+            }
+            if (verifyResult.result) {
+                company.setStatus(CompanyStatusEnum.ENABLED);
+                company.setVerifyTime(date);
+                company.setLastModifiedTime(date);
+                company.setManager(companyVerification.getApplyUser());
+                User user = companyVerification.getApplyUser();
+                Role managerRole = new Role();
+                managerRole.setName("ROLE_MANAGER");
+                managerRole.setId(2);
+                user.setRole(managerRole);
+                userRepository.save(user);
+            } else{
+                company.setStatus(CompanyStatusEnum.UNVERIFYIED);
+                company.setLastModifiedTime(date);
+            }
+        } else {
+            if(verifyResult.result){
+                Set<SystemEditionEnum> openEditions = company.getOpenEditions();
+                openEditions.add(SystemEditionEnum.valueOf(companyVerification.getApplyInfo()));
+                company.setLastModifiedTime(date);
+            }
+        }
+        companyVerification.setVerifyResult(verifyResult.result);
+        companyVerification.setReason(verifyResult.reason);
+        companyVerification.setVerifyTime(date);
+        companyVerification.setVerifyUser(currentUser.getUser());
+
+        companyRepository.save(company);
+        companyVerificationRepository.save(companyVerification);
+        return new ResponseBody();
+    }
+
+
+    @RequestMapping(value = "/user/insertOrUpdate", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public User insertOrUpdateUser(@RequestBody User user) {
+        if (user.getCreateTime() == null) {
+            user.setCreateTime(new Date());
+        }
+        return userRepository.save(user);
+
+    }
+
+    @RequestMapping(value = "/user/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<User> list(Pageable page) {
+        return userRepository.findAll(page);
+    }
+
+    @RequestMapping(value = "/company/info/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Company companyInfo(@PathVariable Integer id) {
+        return companyRepository.findOne(id);
+    }
+
+    @RequestMapping(value = "/company/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseBody companyList(@PageableDefault(sort = {"verifyTime"},direction = Sort.Direction.DESC)Pageable page) {
+
+        Page<Company> companyPage = companyRepository.findByStatus(page);
+        Map<String,Object> returnMap = new HashMap<>();
+        List<CompanyVO> companyList = new ArrayList<>();
+        for (Company company: companyPage) {
+            Map<String,Object> companyMap = new HashMap<>();
+            CompanyVO companyVO = new CompanyVO(company);
+            companyList.add(companyVO);
+        }
+        returnMap.put("companyList",companyList);
+        returnMap.put("number",companyPage.getNumber());
+        returnMap.put("size",companyPage.getSize());
+        returnMap.put("totalElements",(int)companyPage.getTotalElements());
+        returnMap.put("totalPages",companyPage.getTotalPages());
+        return new ResponseBody(returnMap);
+    }
+
+    @RequestMapping(value = "/companyVerification/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseBody companyVerificationList(@PageableDefault(size=15,sort = {"applyTime"},direction = Sort.Direction.DESC)Pageable page) {
+        Common.UserDetailsImpl currentUser = Common.getPrincipal();
+        if(currentUser == null) {
+            throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
+        }
+        Page<CompanyVerification> companyVerificationPage = companyVerificationRepository.findAll(page);
+        Map<String,Object> returnMap = new HashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
+        List<Map<String,Object>> companyVerificationList = new ArrayList<>();
+        for (CompanyVerification companyVerification: companyVerificationPage) {
+            Map<String,Object> companyVerificationMap = new HashMap<>();
+            CompanyVerificationVO companyVerificationVO = new CompanyVerificationVO(companyVerification);
+            companyVerificationMap.put("companyVerification", companyVerificationVO);
+            companyVerificationMap.put("verificationTime", companyVerificationVO.getVerifyTime() == null ? "待审核":sdf.format(companyVerificationVO.getVerifyTime()));
+            companyVerificationList.add(companyVerificationMap);
+        }
+        returnMap.put("companyVerificationList",companyVerificationList);
+        returnMap.put("number",companyVerificationPage.getNumber());
+        returnMap.put("size",companyVerificationPage.getSize());
+        returnMap.put("totalElements",(int)companyVerificationPage.getTotalElements());
+        returnMap.put("totalPages",companyVerificationPage.getTotalPages());
+        return new ResponseBody(returnMap);
+    }
+
+    @RequestMapping(value = "/company/insertOrUpdate", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public Company insertOrUpdateCompany(@RequestBody Company company) {
+        if (company.getCreateTime() == null) {
+            company.setCreateTime(new Date());
+            company.setAppCode(parameterService.getMD5(new Date().toString().getBytes(Charset.forName("utf-8"))));
+        }
+        return companyRepository.save(company);
+    }
+
+    @RequestMapping(value = "/company/deposit", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ADMIN')")
+    public Object deposit(@RequestBody @Valid AdminChargeCompany form, BindingResult result) {
+        if (!result.hasErrors()) {
+            Company company = companyRepository.findOne(form.getId());
+            companyService.directDeposit(company, form.getAmount(), PaymentChannelEnum.BACKEND, form.getNote());
+            return company;
+        } else {
+            return ValidUtils.getFirstErrorInfo(result);
+        }
+    }
+
+    @RequestMapping(value = "/company/{id}/remainderLog/list", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<CompanyRemainderLog> remainderLogList(@PathVariable Integer id, Pageable page) {
+        Company company = companyRepository.findOne(id);
+        return companyRemainderLogRepository.findByCompanyAndStatusNotOrderByIdDesc(company, ChargeStatusEnum.WAIT_BUYER_PAY, page);
+    }
+
+
+    public static class AdminChargeCompany {
+        @NotNull
+        private Integer id;
+        @NotBlank
+        private String note;
+        @NotNull
+        private Integer amount;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getNote() {
+            return note;
+        }
+
+        public void setNote(String note) {
+            this.note = note;
+        }
+
+        public Integer getAmount() {
+            return amount;
+        }
+
+        public void setAmount(Integer amount) {
+            this.amount = amount;
+        }
+
+    }
+
+    public static class VerifyResult {
+        @NotNull(message = "请选择审核结果")
+        private Boolean result;
+        private String reason;
+
+        public Boolean getResult() {
+            return result;
+        }
+
+        public void setResult(Boolean result) {
+            this.result = result;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
+    }
+}

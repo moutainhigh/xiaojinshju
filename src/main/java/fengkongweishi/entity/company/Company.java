@@ -1,0 +1,268 @@
+package fengkongweishi.entity.company;
+
+import fengkongweishi.entity.base.BaseEntity;
+import fengkongweishi.entity.user.User;
+import fengkongweishi.enums.CompanyStatusEnum;
+import fengkongweishi.enums.LicenseTypeEnum;
+import fengkongweishi.enums.SystemEditionEnum;
+
+import javax.persistence.*;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * @author huanghengkun
+ * @date 2018/01/08
+ */
+@Entity
+public class Company extends BaseEntity {
+
+    @Column(unique = true)
+    private String companyName;
+    @Column(unique = true)
+    private String appCode;
+    private String appSecret;
+    @Enumerated(EnumType.STRING)
+    private CompanyStatusEnum status;
+    private Date createTime;
+    private Date verifyTime;
+    private Date lastModifiedTime;
+    private Integer remainder = 0;
+    private String province;
+    private String city;
+    private String address;
+    @Enumerated(EnumType.STRING)
+    private LicenseTypeEnum licenseType;
+    private String licenseNumber;
+    @Column(columnDefinition = "text")
+    private String licensePicURL;
+    @ElementCollection
+    @CollectionTable(name = "companyOpenEditions")
+    @MapKeyJoinColumn(name = "companyId")
+    @Column(name = "edition")
+    @Enumerated(EnumType.STRING)
+    private Set<SystemEditionEnum> openEditions;
+    private Boolean openWeChatSubscription;
+    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY, mappedBy = "company")
+    private Set<User> employees;
+    @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @JoinColumn(name = "managerId")
+    private User manager;
+    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @JoinColumn(name = "parentId")
+    private Company parent;
+    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY, mappedBy = "parent")
+    private Set<Company> children;
+    /**
+     * 微信公众号,预留字段
+     */
+    private String weChatSubscription;
+    /**
+     * 微信小程序,预留字段
+     */
+    private String weChatSmallProgram;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Company company = (Company) o;
+        return Objects.equals(companyName, company.companyName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(companyName);
+    }
+
+    public Company getParent() {
+        return parent;
+    }
+
+    public void setParent(Company parent) {
+        this.parent = parent;
+    }
+
+    public Set<Company> getChildren() {
+        return children;
+    }
+
+    public void setChildren(Set<Company> children) {
+        this.children = children;
+    }
+
+    public Integer getRemainder() {
+        return remainder;
+    }
+
+    public void deposit(Integer value) {
+        this.remainder = this.remainder + Math.abs(value);
+    }
+
+    public void withdraw(Integer value) {
+        this.remainder = this.remainder - Math.abs(value);
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+
+    public Date getLastModifiedTime() {
+        return lastModifiedTime;
+    }
+
+    public void setLastModifiedTime(Date lastModifiedTime) {
+        this.lastModifiedTime = lastModifiedTime;
+    }
+
+    public Date getVerifyTime() {
+        return verifyTime;
+    }
+
+    public void setVerifyTime(Date verifyTime) {
+        this.verifyTime = verifyTime;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public String getAppSecret() {
+        return appSecret;
+    }
+
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
+    }
+
+    public CompanyStatusEnum getStatus() {
+        return status;
+    }
+
+    public void setStatus(CompanyStatusEnum status) {
+        this.status = status;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public void setRemainder(Integer remainder) {
+        this.remainder = remainder;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public LicenseTypeEnum getLicenseType() {
+        return licenseType;
+    }
+
+    public void setLicenseType(LicenseTypeEnum licenseType) {
+        this.licenseType = licenseType;
+    }
+
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
+    }
+
+    public String getLicensePicURL() {
+        return licensePicURL;
+    }
+
+    public void setLicensePicURL(String licensePicURL) {
+        this.licensePicURL = licensePicURL;
+    }
+
+    public Set<SystemEditionEnum> getOpenEditions() {
+        return openEditions;
+    }
+
+    public void setOpenEditions(Set<SystemEditionEnum> openEditions) {
+        this.openEditions = openEditions;
+    }
+
+    public Boolean getOpenWeChatSubscription() {
+        return openWeChatSubscription;
+    }
+
+    public void setOpenWeChatSubscription(Boolean openWeChatSubscription) {
+        this.openWeChatSubscription = openWeChatSubscription;
+    }
+
+    public Set<User> getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(Set<User> employees) {
+        this.employees = employees;
+    }
+
+    public User getManager() {
+        return manager;
+    }
+
+    public void setManager(User manager) {
+        this.manager = manager;
+    }
+
+    public String getWeChatSubscription() {
+        return weChatSubscription;
+    }
+
+    public void setWeChatSubscription(String weChatSubscription) {
+        this.weChatSubscription = weChatSubscription;
+    }
+
+    public String getWeChatSmallProgram() {
+        return weChatSmallProgram;
+    }
+
+    public void setWeChatSmallProgram(String weChatSmallProgram) {
+        this.weChatSmallProgram = weChatSmallProgram;
+    }
+}

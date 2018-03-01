@@ -1,0 +1,180 @@
+<script>
+
+    "use strict";
+    app.controller("taobaoCtrl", [
+        "$scope", "$http", "$rootScope", '$state', '$interval', '$timeout', "$stateParams", "$filter",
+        function ($scope, $http, $rootScope, $state, $interval, $timeout, $stateParams, $filter) {
+            $scope.edition = $stateParams.edition ? $stateParams.edition : sessionStorage.getItem('edition');
+            $scope.id = $stateParams.reportId;
+            $scope.username = $stateParams.username;
+            $scope.phone = $stateParams.phone;
+            $scope.idCard = $stateParams.idCard;
+            $scope.appCode = $stateParams.appCode;
+            $scope.today = $rootScope.getDate();
+            $scope.endStep = false;
+            $scope.clickFlag = true;
+
+            $scope.imgUrl = "";
+            if ($scope.edition === "PERSONECOMMERCE" || $scope.edition === "PERSONSENIOR") {
+                $scope.endStep = true;
+            }
+
+            $scope.taobao ={
+                moxieTaskTaobao:""
+            };
+//            $scope.next = function () {
+//                $http({
+//                    method: "POST",
+//                    url: "/report/" + $scope.id + "/taobao",
+//                    headers:{
+//                        appCode: $scope.appCode,
+//                        terminal: "WEB"
+//                    },
+//                    data: $scope.taobao
+//                }).then(function (result) {
+//                    if (result.data.data.status === "success") {
+//                        $state.go("search_detail",{id:$scope.id});
+//                    } else {
+//                        alert("查询失败");
+//                    }
+//                })
+//            };
+//
+//            $scope.passStep = function () {
+//                $state.go("search_detail",{id:$scope.id});
+//            };
+
+            $scope.start = function () {
+                if($scope.clickFlag){
+                    $scope.createTask();
+                }
+            };
+
+            $scope.passStart = function () {
+                clearInterval($scope.timer);
+                $state.go("search_detail",{id:$scope.id});
+            };
+
+            $scope.createTask = function () {
+                $scope.clickFlag = false;
+                var timestamp = (new Date()).valueOf();
+                $http({
+                    method: "POST",
+                    headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"},
+                    url: 'https://api.51datakey.com/gateway/v2/tasks?d=' + timestamp,
+                    data:{
+                        idcard:  $scope.idCard,
+                        login_type: "qrcode",
+                        name: $scope.username,
+                        origin: "2",
+                        phone: $scope.phone,
+                        subtype: "taobao",
+                        type: "ec",
+                        user_id: "moxietest"
+                    }
+                }).then(function (response) {
+                    $scope.taobao.moxieTaskTaobao =response.data.task_id;
+                    $scope.timer = setInterval(function () {
+                        var timestamp = (new Date()).valueOf();
+                        $http({
+                            method: "GET",
+                            url:"https://api.51datakey.com/gateway/v1/tasks/"+$scope.taobao.moxieTaskTaobao+"/status?d="+timestamp,
+                            headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"}
+                        }).then(function (result) {
+                            if($scope.imgUrl === ""){
+                                $scope.imgUrl = JSON.parse(result.data.input.value);
+                                $scope.imgUrl = $scope.imgUrl.base64;
+                                $scope.$apply();
+                            }
+                            $scope.tip = result.data.description === "等待扫码" ? "请打开手机淘宝扫此二维码" : result.data.description;
+                            if(result.data.phase_status === 'DONE_SUCC'){
+                                $http({
+                                    method: "POST",
+                                    url: "/report/" + $scope.id + "/taobao",
+                                    headers:{
+                                        appCode: $scope.appCode,
+                                        terminal: "WEB"
+                                    },
+                                    data: $scope.taobao
+                                }).then(function (result) {
+                                    if (result.data.status === "success") {
+                                        clearInterval($scope.timer);
+                                        $state.go("search_detail", {id: $scope.id});
+                                    } else {
+                                        $scope.tip = result.data.message;
+                                        if(result.data.phase_status === 'DONE_TIMEOUT'){
+                                            clearInterval($scope.timer);
+                                            $scope.clickFlag = true;
+                                            $scope.tip = '点击开始查询按钮重新查询';
+                                        }
+                                        //alert(result.data.message);
+                                    }
+//                                    console.log($scope.timer)
+//                                    $scope.$on('$destroy',function(){
+//                                        $interval.cancel($scope.timer);
+//                                    })
+                                });
+//                                $scope.$on('$destroy',function(){
+//                                    if ($scope.timer) {
+//                                        clearInterval($scope.timer);
+//                                        $scope.timer = null;
+//                                    }
+//                                });
+                            }
+                        })
+                    }, 1000)
+                });
+            };
+
+        }]);</script>
+<div class="body_wrap list_page" ng-controller="taobaoCtrl">
+    <div class="app-content-body" style="height:518px;">
+        <div class="hbox hbox-auto-xs bg-white">
+            <div class="col" style="width:65%">
+                <div style="margin: 50px 100px 100px 100px" ng-model="editionInfo">
+                    <div class="tabTitle">淘宝认证</div>
+                </div>
+                <div class="vbox">
+                    <div class="row-row">
+                        <div class="cell scrollable hover">
+                            <div class="cell-inner wrapper-md">
+                                <form class="form-horizontal ng-pristine ng-valid ng-valid-date ng-valid-required ng-valid-date-disabled">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label"></label>
+                                        <div class="col-sm-5" style="text-align: center">
+                                            <img src="data:image/png;base64,{{imgUrl}}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label"></label>
+                                        <div class="col-sm-5" style="text-align: center">
+                                            <span class="text-danger">{{tip}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin-top: 30px">
+                                        <label class="col-sm-3 control-label"></label>
+                                        <div class="col-sm-4">
+                                            <button class="layui-btn layui-btn-primary" ng-click="passStart()"
+                                                    ng-if="endStep">跳过并查询
+                                            </button>
+                                            <!--<button class="layui-btn" ng-click="next()" ng-if="!endStep">下一步</button>-->
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <!--<button class="layui-btn layui-btn-normal" ng-click="passStep()"-->
+                                                    <!--ng-if="!endStep">跳过-->
+                                            <!--</button>-->
+                                            <button class="layui-btn layui-btn-normal" ng-click="start()"
+                                                    ng-if="endStep">开始查询
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

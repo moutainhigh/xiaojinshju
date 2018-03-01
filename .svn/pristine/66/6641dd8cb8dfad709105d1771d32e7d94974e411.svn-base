@@ -1,0 +1,319 @@
+<script>
+    "use strict";
+    app.controller("teamListCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$timeout','$interval',
+        function ($scope, $http, $rootScope, $state, $timeout, $interval) {
+           //数据初始化
+            $scope.clearSearch = function () {
+                $scope.searchInfo = {
+                };
+            };
+            $scope.clearSearch();
+
+            $scope.newTeam ={
+                username:"",
+                nickname:"",
+                sms:"",
+                password1:"",
+                password2:""
+            };
+            //验证码初始化
+            $scope.smsInit = function () {
+                $scope.personSeconds = 60;
+                $scope.personSendSMSText = '获取验证码';
+                $scope.personSendSMSPending = false;//验证码发送中的状态，60秒后可重发
+            };
+
+            $scope.smsInit();
+
+            $scope.teamFlag = false;
+
+            $scope.personSms = function(phone){
+
+                if(phone.length !== 11){
+                    alert('请输入11位手机号，您输入'+ phone.length +'位');
+                } else{
+                    $http({method: "get", url: '/user/registerSms?username=' + phone}).then(function (response) {
+                        var resResult = response.data;
+                        if (resResult.status == 'fail') {
+
+                        } else {
+
+                        }
+                    }, function(){
+
+                    });
+                    $scope.personSendSMSPending = true;
+                    $interval(function(){
+                        $scope.personSeconds --;
+                        $scope.personSendSMSText = $scope.personSeconds + '秒后可重新发送';
+                    },1000,60).then(function(){
+                        $scope.personSendSMSPending = false;
+                        $scope.personSendSMSText = '获取验证码';
+                        $scope.personSeconds = 60;
+                    });
+                }
+            };
+
+
+            $scope.getList = function(size,page){
+                $http({
+                    method:'POST',
+                    url:'/company/teamList?size='+size+'&page=' + page,
+                    data:$scope.searchInfo
+                }).then(function (resResult) {
+                    console.log(resResult);
+                    resResult = resResult.data;
+                    $scope.list = resResult.data.teamList;
+                    if(!$scope.teamFlag){
+                        //分页功能
+                        layui.use(['laypage', 'layer'], function(){
+                            var laypage = layui.laypage;
+                            laypage.render({
+                                elem: 'demo'
+                                ,count: resResult.data.totalElements
+                                ,limit: 7
+                                ,limits:[6,7,8]
+                                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                                ,jump: function(obj,first)
+                                {
+                                    if(!first){
+                                        $scope.getList(obj.limit,obj.curr-1);
+                                    }
+
+                                }
+                            });
+                        });
+                        $scope.teamFlag =true;
+                    }
+                });
+            };
+            $scope.getList(7,0);
+
+
+            $scope.memberPhone = function(){
+                $scope.newTeam.nickname = "";
+                if($scope.newTeam.username.length !== 11){
+                    $scope.userVerify = {
+                        "code":"wrong",
+                        "message": "请输入11位手机号码"
+                    };
+                }else {
+                    //用户存在
+                    $http({method:"GET",url:"/company/user/show?username="+$scope.newTeam.username}).then(
+                        function (result) {
+                            console.log(result);
+                            if(result.data.status === "success"){
+                                $timeout(function () {
+                                    $scope.userVerify = {
+                                        "code": "right",
+                                        "message": "用户存在，可直接添加"
+                                    };
+                                    $scope.newTeam.nickname = result.data.data.nickname;
+                                    $scope.$apply();
+                                    $scope.httpInfo = {
+                                        "method": "GET",
+                                        "url": "/company/addTeam?companyName=" + $scope.name + "&userName="+$scope.newTeam.username
+                                    };
+                                },0,false)
+                            }else{
+                                $timeout(function () {
+                                    $scope.userVerify = {
+                                        code: 'wrong',
+                                        message: "该用户不存在，请先注册"
+                                    };
+                                    $scope.$apply();
+                                    $scope.httpInfo ={
+                                        "method":"POST",
+                                        "url":"/company/registerAddTeam?companyName=" + $scope.name,
+                                        "data":$scope.newTeam
+                                    };
+                                },0,false)
+                            }
+                        }
+                    )
+                }
+            };
+
+            $scope.addPerson =function () {
+                console.log($scope.httpInfo);
+                    $http($scope.httpInfo).then(
+                        function (result) {
+                            $timeout(function () {
+                            if(result.data.status === "fail"){
+                                alert(result.data.message);
+                            }else {
+                                $("#create_team").modal("hide");
+                                alert("添加成功");
+                                $scope.teamFlag =false;
+                                $scope.getList(7,0);
+                            }
+                            },0,false)
+                        })
+            };
+
+            //清除模态框
+            $("#create_team").on('hide.bs.modal',
+                function () {
+                    $scope.newTeam = {
+                        username:"",
+                        nickname:"",
+                        sms:"",
+                        password1:"",
+                        password2:""
+                    };
+                    $scope.name = "";
+                    $scope.userVerify= {};
+                    $scope.smsInit();
+                    $scope.$apply();
+            });
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="teamListCtrl">
+    <div class="wrapper-md b-b clearfix" style="padding:15px 20px;">
+        <div class="font-thin h4">
+            <div>
+                <form class="layui-form layui-row">
+                    <div class="w inline m-r">
+                        <input type="text" class="form-control"
+                               placeholder="请输入团队名称"
+                               ng-model="searchInfo.teamName"
+                               autocomplete="off">
+                    </div>
+                    <div class="w inline m-r">
+                        <input type="text" class="form-control"
+                               placeholder="请输入姓名"
+                               ng-model="searchInfo.managerName"
+                               autocomplete="off">
+                    </div>
+                    <div class="w inline m-r">
+                        <input type="text" class="form-control"
+                               placeholder="请输入手机号"
+                               ng-model="searchInfo.managerMobile"
+                               autocomplete="off">
+                    </div>
+                    <div class="w inline m-r">
+                        <button class="layui-btn layui-btn-sm"
+                                ng-click="getList(0)">查询</button>
+                        <button class="layui-btn layui-btn-sm"
+                                ng-click="clearSearch()">清除</button>
+                    </div>
+                    <div class="w inline m-r" >
+                        <button class="layui-btn layui-btn-sm layui-btn-primary"
+                                data-target="#create_team"
+                                data-toggle="modal">新建团队</button>
+                    </div>
+                </form>
+                <table class="layui-table" lay-even="" lay-skin="nob" style="margin-top: 30px">
+                    <colgroup>
+                        <col width="150">
+                        <col width="150">
+                        <col width="200">
+                        <col>
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th>团队名称</th>
+                        <th>团队负责人</th>
+                        <th>联系方式</th>
+                        <th>团队成员（人）</th>
+                        <th>账户余额（元）</th>
+                        <th>创建人</th>
+                        <th>创建时间</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="item in list">
+                        <td>{{item.teamName}}</td>
+                        <td>{{item.managerName}}</td>
+                        <td>{{item.managerMobile}}</td>
+                        <td>{{item.employeeCount}}</td>
+                        <td>{{item.remainder}}</td>
+                        <td>{{item.createdByName}}</td>
+                        <td>{{item.createdAt}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+                </form>
+            </div>
+        </div>
+    <div id="demo" style="text-align: center"></div>
+    <!--新增团队模态框-->
+    <div class="modal fade" id="create_team" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">新建团队</h4>
+                </div>
+                <div class="modal-body contentFont">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-lg-3 control-label">团队名称：</label>
+                            <div class="col-sm-5">
+                                <input class="form-control" ng-model="name" placeholder="请输入团队名称" type="text">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-3 control-label">联系方式：</label>
+                            <div class="col-sm-5">
+                                <input class="form-control" id="memberPhone" ng-model="newTeam.username"  placeholder="请输入负责人手机号" type="text" ng-change="memberPhone()">
+                            </div>
+                            <div class="col-lg-4" style="margin: 8px 0 0 -25px;">
+                                <span class="text-warning control-label" ng-show="userVerify.code === 'wrong'"><i class="fa fa-ban"></i> {{userVerify.message}}</span>
+                                <span class="text-success control-label" ng-show="userVerify.code === 'right'"><i class="fa fa-check"></i> {{userVerify.message}}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">负责人姓名：</label>
+                            <div class="col-sm-5">
+                                <input class="form-control" ng-model="newTeam.nickname"  placeholder="请输入成员姓名" type="text">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-3 control-label">验证码：</label>
+                            <div class="col-sm-3">
+                                <input class="form-control" name="sms" ng-model="newTeam.sms"  placeholder="6位验证码" type="text">
+                            </div>
+                            <div class="col-sm-3" style="margin-left: -25px;">
+                                <button  class="btn btn-default" ng-hide="personSendSMSPending"  ng-click="personSms(newTeam.username)">获取验证码</button>
+                                <button  class="btn btn-default disabled" ng-show="personSendSMSPending">{{personSendSMSText}}</button>
+                            </div>
+                        </div>
+                        <div class="form-group" ng-if="userVerify.message === '该用户不存在，请先注册'">
+                            <label class="col-sm-3 control-label">登录密码：</label>
+                            <div class="col-sm-5">
+                                <input class="form-control" name="name" ng-model="newTeam.password1"  placeholder="不得少于6位" type="password">
+                            </div>
+                            <div class="col-lg-4" style="margin: 8px 0 0 -25px;">
+                                <span class="text-danger" ng-show="newTeam.password1.length <6 && newTeam.password1.length > 0"><i class="fa fa-ban"></i> 格式错误</span>
+                                <span class="text-success" ng-show="newTeam.password1.length >5"><i class="fa fa-check"></i> 格式正确</span>
+                            </div>
+                        </div>
+                        <div class="form-group" ng-if="userVerify.message === '该用户不存在，请先注册'">
+                            <label class="col-sm-3 control-label">确认密码：</label>
+                            <div class="col-sm-5">
+                                <input class="form-control" name="name" ng-model="newTeam.password2"  placeholder="不得少于6位" type="password">
+                            </div>
+                            <div class="col-lg-4" style="margin: 8px 0 0 -25px;">
+                                <span class="text-success " ng-show="newTeam.password1.length>0 && newTeam.password1 === newTeam.password2"><i class="fa fa-check"></i> 密码相同</span>
+                                <span class="text-danger" ng-show="newTeam.password1.length>0 && newTeam.password1 !== newTeam.password2"><i class="fa fa-ban"></i> 密码不同</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="clearSearch()">取消</button>
+                    <button type="button" class="btn btn-primary" ng-click="addPerson()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+

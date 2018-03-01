@@ -1,0 +1,73 @@
+package fengkongweishi.entity.supplyapi;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+/**
+ * ali全国车辆违章查询(小卡科技)
+ *
+ * @author huanghengkun
+ * @date 2018/01/25
+ */
+@Component
+public class AliYunViolationXK implements ISupplyAPI {
+    @Value("${aliyun.api.violation.xk.name}")
+    private String name;
+    @Value("${aliyun.api.violation.xk.code}")
+    private String code;
+    @Value("${aliyun.api.violation.xk.effectivetime}")
+    private Integer effectiveTime;
+    @Value("${aliyun.api.violation.xk.host}")
+    private String host;
+    @Value("${aliyun.api.violation.xk.path}")
+    private String path;
+    @Value("${aliyun.api.violation.xk.method}")
+    private String method;
+    @Value("${aliyun.api.appcode}")
+    private String appCode;
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getCode() {
+        return code;
+    }
+
+    @Override
+    public Integer getEffectiveTime() {
+        return effectiveTime;
+    }
+
+    @Override
+    public String getHost() {
+        return host;
+    }
+
+    @Override
+    public String getPath() {
+        return path;
+    }
+
+    @Override
+    public String getMethod() {
+        return method;
+    }
+
+    @Override
+    public String getAppCode() {
+        return appCode;
+    }
+
+    @Override
+    public String getSecretId() {
+        return null;
+    }
+
+    @Override
+    public String getSecretKey() {
+        return null;
+    }
+}

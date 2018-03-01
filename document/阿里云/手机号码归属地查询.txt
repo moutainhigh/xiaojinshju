@@ -1,0 +1,26 @@
+调用地址：http://mobileas.market.alicloudapi.com/mobile
+
+请求方式：GET
+
+返回类型：JSON
+
+请求参数（Query）
+名称	类型	是否必须	描述
+mobile	STRING	必选	手机号码
+
+正常返回示例
+{
+  "error_code": 0,
+  "reason": "Success",
+  "result": {
+    "company": "中国联通",
+    "card": "中国联通 GSM",
+    "province": "上海",
+    "city": "上海",
+    "num": "1561818",
+    "citycode": "021",
+    "areacode": "310100",
+    "zip": "200000",
+    "prefix": "156"
+  }
+}

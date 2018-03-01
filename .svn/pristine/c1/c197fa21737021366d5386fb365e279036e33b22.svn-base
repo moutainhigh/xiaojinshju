@@ -1,0 +1,205 @@
+package fengkongweishi.service.report;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.moxie.api.DefaultMoxieClient;
+import com.moxie.api.MoxieClient;
+import com.moxie.api.MoxieRequest;
+import com.moxie.api.MoxieResponse;
+import com.moxie.api.domain.Authorization;
+import com.moxie.api.domain.MoxieApiException;
+import com.moxie.api.http.HttpClient;
+import com.moxie.api.http.HttpClientConfig;
+import com.moxie.api.http.HttpMethod;
+import fengkongweishi.entity.personreport.PersonReport;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+
+/**
+ * @author huanghengkun
+ * @date 2018/01/20
+ */
+@Service
+public class MoxieService {
+
+    private static HttpClient httpClient;
+    private static Authorization authorization;
+    @Value("${mojie.api.key}")
+    private String apiKey;
+    @Value("${mojie.api.token}")
+    private String token;
+
+    @PostConstruct
+    public void initHttpClient() {
+        HttpClientConfig httpClientConfig = HttpClientConfig.custom().setMaxTotal(100).setDefaultMaxPerRoute(2)
+                .setConnectTimeout(30 * 100).setConnectionRequestTimeout(30 * 100).setSocketTimeout(30 * 100).build();
+        httpClient = new HttpClient(httpClientConfig.getRequestConfig(), httpClientConfig.getPool());
+        authorization = Authorization.AuthorizationBuilder.newBuilder().withApiKey(apiKey).withToken(token).build();
+    }
+
+	/*
+     * public JSONObject fetchTaoBaoOrder(String taskId) { String url =
+	 * "https://api.51datakey.com/gateway/taobao/v5/tradedetails/" + taskId;
+	 * MoxieRequest moxieRequest =
+	 * MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+	 * System.out.println(String.format(">>> 取分析结果，调用魔蝎URL: %s", url));
+	 * 
+	 * MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url,
+	 * authorization.getToken()); MoxieResponse response;
+	 * 
+	 * try { response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+	 * System.out.println("========" + response); } catch (Exception e) {
+	 * e.printStackTrace(); return null; } return
+	 * JSON.parseObject(response.getResponseData()); }
+	 * 
+	 * public JSONArray fetchTaoBaoAddress(String taskId) { String url =
+	 * "https://api.51datakey.com/gateway/taobao/v5/deliveraddress/"+taskId;
+	 * MoxieRequest moxieRequest =
+	 * MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+	 * System.out.println(String.format(">>> 取分析结果，调用魔蝎URL: %s", url));
+	 * 
+	 * MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url,
+	 * authorization.getToken()); MoxieResponse response;
+	 * 
+	 * try { response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+	 * System.out.println("========" + response); } catch (Exception e) {
+	 * e.printStackTrace(); return null; } return
+	 * JSON.parseArray(response.getResponseData()); }
+	 * 
+	 * public JSONObject fetchTaoBaoUserInfo(String taskId) { String url =
+	 * "https://api.51datakey.com/gateway/taobao/v5/userinfo/" + taskId;
+	 * MoxieRequest moxieRequest =
+	 * MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+	 * System.out.println(String.format(">>> 取分析结果，调用魔蝎URL: %s", url));
+	 * 
+	 * MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url,
+	 * authorization.getToken()); MoxieResponse response;
+	 * 
+	 * try { response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+	 * System.out.println("========" + response); } catch (Exception e) {
+	 * e.printStackTrace(); return null; } return
+	 * JSON.parseObject(response.getResponseData()); }
+	 */
+
+    public JSONObject fetchTaoBaoOriginalData(String taskId) {
+        String url = "https://api.51datakey.com/gateway/taobao/v5/data/" + taskId;
+        MoxieRequest moxieRequest = MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+        System.out.println(String.format(">>> 取分析结果，调用魔蝎URL: %s", url));
+
+        MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url, authorization.getToken());
+        MoxieResponse response;
+
+        try {
+            response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+            System.out.println("========" + response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return JSON.parseObject(response.getResponseData());
+    }
+
+    public JSONObject fetchTaoBaoReport(PersonReport report) {
+        // if (checkTaoBaoTaskStatus(report.getTaoBaoAccount(),
+        // report.getMoxieTaskTaobao())) {
+        // String taskId = report.getMoxieTaskTaobao();
+        // String url = "https://api.51datakey.com/gateway/taobao/v3/report/" +
+        // taskId;
+        // MoxieRequest moxieRequest =
+        // MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+        // System.out.println(String.format(">>> 取分析结果，调用魔蝎URL: %s", url));
+        //
+        // MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url,
+        // authorization.getToken());
+        // MoxieResponse response;
+        //
+        // try {
+        // response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+        // System.out.println("========" + response);
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // return null;
+        // }
+        // return JSON.parseObject(response.getResponseData());
+        //
+        // } else {
+        // return null;
+        // }
+        String taskId = report.getMoxieTaskTaobao();
+        String url = "https://api.51datakey.com/gateway/taobao/v3/report/" + taskId;
+        MoxieRequest moxieRequest = MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+        System.out.println(String.format(">>> 取分析结果，调用魔蝎URL: %s", url));
+
+        MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url, authorization.getToken());
+        MoxieResponse response;
+
+        try {
+            response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+            System.out.println("========" + response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return JSON.parseObject(response.getResponseData());
+    }
+
+    public JSONObject fetchCarrierReport(PersonReport report) {
+        if (checkCarrierTaskStatus(report.getMobile(), report.getMoxieTaskCarrier())) {
+            String mobile = report.getMobile();
+            String name = report.getName();
+            String idCard = report.getIdCard();
+            String taskId = report.getMoxieTaskCarrier();
+            String url = "https://api.51datakey.com/carrier/v3/mobiles/" + mobile + "/mxreport?name=" + name
+                    + "&idcard=" + idCard + "&task_id=" + taskId + "&contact=" + report.joinCarrierContact();
+            MoxieRequest moxieRequest = MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+            System.out.println(String.format(">>> 取分析结果，调用魔蝎URL: %s", url));
+
+            MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url, authorization.getToken());
+            MoxieResponse response;
+
+            try {
+                response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+                System.out.println("========" + response);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+            return JSON.parseObject(response.getResponseData());
+
+        } else {
+            return null;
+        }
+    }
+
+    private boolean checkCarrierTaskStatus(String mobile, String taskId) {
+        String url = "https://api.51datakey.com/report/status/v1/carrier/status?userName=" + mobile + "&taskId="
+                + taskId;
+        MoxieRequest moxieRequest = MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+        MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url, authorization.getApiKey());
+        MoxieResponse response = null;
+        try {
+            response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+        } catch (Exception e) {
+            MoxieApiException moxieApiException = new MoxieApiException(e);
+            System.out.println("调用魔蝎接口异常: " + moxieApiException.getMessage());
+        }
+        return response != null && response.isSuccess();
+    }
+
+    private boolean checkTaoBaoTaskStatus(String account, String taskId) {
+        String url = "https://api.51datakey.com/report/status/v1/taobao/status?userName=" + account + "&taskId="
+                + taskId;
+        MoxieRequest moxieRequest = MoxieRequest.custom().setResponseClass(MoxieResponse.class).build();
+        MoxieClient moxieClient = new DefaultMoxieClient(httpClient, url, authorization.getApiKey());
+        MoxieResponse response = null;
+        try {
+            response = moxieClient.execute(moxieRequest, HttpMethod.GET);
+        } catch (Exception e) {
+            MoxieApiException moxieApiException = new MoxieApiException(e);
+            System.out.println("调用魔蝎接口异常: " + moxieApiException.getMessage());
+        }
+        return response != null && response.isSuccess();
+    }
+}

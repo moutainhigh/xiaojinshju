@@ -1,0 +1,88 @@
+
+<div class="welcome_wrap">
+    <div ng-if="!myinfo.company.id && myinfo.role.id !== 1" class="approve contentFont">
+        资质认证：根据最新实施的《网络安全法》，为保障个人权益，请您在使用前进行相关的资质认证！
+        <button class="btn m-b-xs w-xs btn-success approveBtn"><a ui-sref="approve">立即认证</a></button>
+        <br />
+        <span style="background: rgb(203,212,193)">联系团队管理员加入团队</span>
+    </div>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <!--认证通过-->
+    <table width="100%" ng-if="myinfo.company.status && myinfo.company.status === 'ENABLED'">
+        <tr>
+            <td width="40%" style="text-align: right;padding-right:60px;">
+                <img src="/fengkongweishi/images/icon_full.png" width="180" alt="风控卫士" />
+            </td>
+            <td style="vertical-align: top;text-align: left">
+                <br />
+                <img src="fengkongweishi/images/welcome_slogan.png" alt="风控卫士" />
+                <br />
+                <a  ui-sref="personweb_form" class="btn btn-success  btn-rounded">个信网络版</a> &nbsp; &nbsp;
+                <a  ui-sref="personloan_form" class="btn btn-success  btn-rounded">个信通讯版</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td style="vertical-align: top;text-align: left;padding-left: 10px">
+                <a  href="/downloads/person_quick_report_demo.pdf" download="个人征信报告（通讯版）样例.PDF" class="text-success" target="_blank"><i class="fa fa-file-pdf-o"></i> 个人征信报告（通讯版）样例.PDF</a>
+            </td>
+        </tr>
+    </table>
+    <!--未认证-->
+    <div class="form-horizontal clearfix col-lg-12" ng-if="!myinfo.company">
+        <div class="col-lg-6 card" style="text-align: center">
+            <div class="tabTitle" style="margin-left: 60px;">职场背景调查<img class="titleImg" src="fengkongweishi/images/icon_Release.png"></div>
+            <div class="contentFont">身份验证、最高学历、职业资格、公安不良、法院诉讼、失信被执行、个人贷款7项权威数据，全面验证求职者背景信息，为企业规避用人风险</div>
+            <div class="form-horizontal clearfix">
+                <div class="m-md">
+                    <button class="cardBtn m-xs">身份验证</button>
+                    <button class="cardBtn m-xs">个人风险</button>
+                    <button class="cardBtn m-xs">学历学籍</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6" style="text-align: left">
+            <div class="card r-t-card">
+                <div class="tabTitle" style="margin-left: 60px;">电商信用报告<img class="titleImg" src="fengkongweishi/images/icon_Release.png"></div>
+                <div class="contentFont">基于用户授权的淘宝数据，整合立木大数据风控引擎，精确识别用户可能存在的违约风险与欺诈情况，同时分析用户可能的居住地与真实联系方式，为风控、催收提供更有价值的依据。</div>
+            </div>
+            <div class="card r-t-card">
+                <div class="tabTitle" style="margin-left: 60px;">运营商信用报告<img class="titleImg" src="fengkongweishi/images/icon_Release.png"></div>
+                <div class="contentFont">基于用户授权的运营商数据，结合身份验证、黑名单过滤和电话标识等维度进行深入分析，从而客观反映用户信用状况和潜在风险。</div>
+            </div>
+        </div>
+    </div>
+    <!--认证中-->
+    <div ng-if="myinfo.company.status === 'VERIFYING'" class="form-horizontal clearfix col-lg-12 m-t-xxl">
+        <div class="col-lg-4" style="text-align: right">
+            <img src="fengkongweishi/images/icon_Prompt.png">
+        </div>
+        <div class="col-lg-8" style="text-align: left">
+            <div class="tabTitle">企业认证审核中，请耐心等待……</div>
+            <div class="contentFont">客服电话：400-5552-6989 &nbsp;&nbsp;工作时间：工作日&nbsp;9:00-18:00</div>
+        </div>
+    </div>
+    <!--认证失败-->
+    <div ng-if="myinfo.company.status === 'UNVERIFYIED'" class="m-t-xxl" style="text-align: center">
+        <div class="tabTitle" style="margin-left: 0">
+            企业认证审核失败
+        </div>
+        <div>
+            <button class="btn m-b-xs w-xs btn-default"><a ui-sref="approve">修改资料</a></button>
+        </div>
+    </div>
+
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
+    </div>
+</div>

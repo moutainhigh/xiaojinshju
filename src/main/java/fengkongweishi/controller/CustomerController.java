@@ -1,0 +1,164 @@
+package fengkongweishi.controller;
+
+import fengkongweishi.entity.company.Company;
+import fengkongweishi.entity.customer.Customer;
+import fengkongweishi.entity.customer.CustomerForSearch;
+import fengkongweishi.entity.customer.CustomerRepository;
+import fengkongweishi.entity.customersearchlog.CustomerSearchLog;
+import fengkongweishi.entity.customersearchlog.CustomerSearchLogRepository;
+import fengkongweishi.entity.customersearchlog.CustomerSearchLogVo;
+import fengkongweishi.entity.evaluate.Evaluation;
+import fengkongweishi.entity.evaluate.EvaluationRepository;
+import fengkongweishi.entity.evaluate.EvaluationVO;
+import fengkongweishi.entity.personreport.PersonReport;
+import fengkongweishi.entity.personreport.PersonReportRepository;
+import fengkongweishi.entity.personreport.PersonReportVO;
+import fengkongweishi.enums.ExceptionEnum;
+import fengkongweishi.enums.Level;
+import fengkongweishi.service.CustomerService;
+import fengkongweishi.util.Common;
+import fengkongweishi.util.FailResponse;
+import fengkongweishi.util.PageInfo;
+import fengkongweishi.util.ResponseBody;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author huanghengkun
+ * @date 2018/01/23
+ */
+@RestController
+@RequestMapping("/customer")
+public class CustomerController {
+
+	@Autowired
+	CustomerRepository customerRepository;
+	@Autowired
+	CustomerService customerService;
+	@Autowired
+	CustomerSearchLogRepository customerSearchLogRepository;
+	@Autowired
+	PersonReportRepository personReportRepository;
+	@Autowired
+	EvaluationRepository evaluationRepository;
+
+	/**
+	 * 关键字搜索查询记录
+	 */
+	@RequestMapping(value = "/searchQuery", method = RequestMethod.POST)
+	@PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or hasRole('LEADER')")
+	public ResponseBody multiConditionSearch(@RequestBody(required = false) CustomerForSearch searchBean,
+			@PageableDefault(sort = { "updateAt" }, direction = Sort.Direction.DESC) Pageable page) {
+		Common.UserDetailsImpl currentUser = Common.getPrincipal();
+		if (currentUser == null) {
+			throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
+		}
+		Company company = currentUser.getCompany();
+		if (company == null) {
+			throw new FailResponse(ExceptionEnum.HAVE_NOT_COMPANY);
+		}
+		Page<Customer> customerPage = customerService.multiConditionSearch(searchBean, page, company);
+		Map<String, Object> returnMap = new HashMap<>();
+		List<CustomerSearchLogVo> customerSearchLogVoList = new ArrayList<>();
+		for (Customer customer : customerPage.getContent()) {
+			CustomerSearchLog customerSearchLog = customer.getLatestSearchLog();
+			CustomerSearchLogVo customerSearchLogVo = new CustomerSearchLogVo(customerSearchLog);
+			customerSearchLogVoList.add(customerSearchLogVo);
+		}
+		returnMap.put("customerSearchLogs", customerSearchLogVoList);
+		returnMap.put("number", customerPage.getNumber());
+		returnMap.put("totalPages", customerPage.getTotalPages());
+		returnMap.put("totalElements", customerPage.getTotalElements());
+		returnMap.put("size", customerPage.getSize());
+		return new ResponseBody(returnMap);
+	}
+
+	// @RequestMapping(value = "/{customerId}/latestReport", method =
+	// RequestMethod.GET)
+	// @PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or
+	// hasRole('LEADER')")
+	// public ResponseBody latestReport(@PathVariable("customerId") Integer
+	// customerId) {
+	// Customer customer = customerRepository.findOne(customerId);
+	// PersonReport report = customer.getLatestSearchLog().getReport();
+	// PersonReportVO reportVo = new PersonReportVO(report,
+	// customer.getLatestSearchLog().getLevel());
+	// return new ResponseBody(reportVo);
+	// }
+
+	@RequestMapping(value = "/report/{reportId}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or hasRole('LEADER')")
+	public ResponseBody showReport(@PathVariable("reportId") Integer reportId) {
+		PersonReport report = personReportRepository.findOne(reportId);
+		CustomerSearchLog customerSearchLog = customerSearchLogRepository.findByReport(report);
+		PersonReportVO reportVo = new PersonReportVO(report, customerSearchLog.getLevel());
+		return new ResponseBody(reportVo);
+	}
+
+	@RequestMapping(value = "/setLevel", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or hasRole('LEADER')")
+	public ResponseBody setLevel(Integer id, String level) {
+		CustomerSearchLog customerSearchLog = customerSearchLogRepository.findOne(id);
+		customerSearchLog.setLevel(Level.valueOf(level));
+		customerSearchLogRepository.save(customerSearchLog);
+		return new ResponseBody();
+
+	}
+
+	@RequestMapping(value = "/evaluate", method = RequestMethod.POST)
+	@PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or hasRole('LEADER')")
+	public ResponseBody evaluateCustomer(@RequestBody Evaluation param) {
+		Common.UserDetailsImpl currentUser = Common.getPrincipal();
+		if (currentUser == null) {
+			throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
+		}
+		Evaluation evaluation = new Evaluation();
+		evaluation.setByUser(currentUser.getUser());
+		evaluation.setComment(param.getComment());
+		evaluation.setToCustomer(customerRepository.findOne(param.getToCustomer().getId()));
+		evaluation.setEvaluateDate(new java.util.Date());
+		evaluationRepository.save(evaluation);
+		return new ResponseBody();
+	}
+
+	@RequestMapping(value = "/historyevaluation", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or hasRole('LEADER')")
+	public ResponseBody searchHistoryEvaluation(Integer customerId,Pageable pageable) {
+		Customer customer = customerRepository.findOne(customerId);
+		Page<Evaluation> evaluationsPage = evaluationRepository.findByToCustomer(customer, pageable); 
+		List<EvaluationVO> evaluationVOs = new ArrayList<>();
+		for (Evaluation evaluation : evaluationsPage) {
+			EvaluationVO evaluationVO = new EvaluationVO(evaluation);
+			evaluationVOs.add(evaluationVO);
+		}
+		PageInfo pageInfo = new PageInfo(evaluationsPage.getNumber(), evaluationsPage.getSize(), evaluationsPage.getTotalElements(),
+				evaluationsPage.getTotalPages(), evaluationVOs);
+		return new ResponseBody(pageInfo);
+	}
+
+	@RequestMapping(value = "historyreport", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or hasRole('LEADER')")
+	public ResponseBody searchHistoryReport(Integer customerId, Pageable pageable) {
+		Customer customer = customerRepository.findOne(customerId);
+		Page<CustomerSearchLog> page = customerSearchLogRepository.findByCustomer(customer, pageable);
+		List<CustomerSearchLogVo> customerSearchLogVos = new ArrayList<>();
+		for (CustomerSearchLog customerSearchLog : page) {
+			CustomerSearchLogVo customerSearchLogVo = new CustomerSearchLogVo(customerSearchLog);
+			customerSearchLogVos.add(customerSearchLogVo);
+		}
+		PageInfo pageInfo = new PageInfo(page.getNumber(), page.getSize(), page.getTotalElements(),
+				page.getTotalPages(), customerSearchLogVos);
+		return new ResponseBody(pageInfo);
+	}
+
+}

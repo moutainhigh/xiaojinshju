@@ -1,0 +1,368 @@
+<script>
+    "use strict";
+    app.controller("approveCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$timeout',
+        function ($scope, $http, $rootScope, $state,$timeout) {
+
+            if($rootScope.myinfo.company){
+                $http({
+                    method: "GET",
+                    url: "/company/getCompanyInfo"
+                }).success(function (resResult) {
+                    console.log(resResult);
+                    $scope.companyInfo = resResult.data;
+                    if($scope.companyInfo.licenseType === 'GENERAL'){
+                        $scope.flag = 'code';
+                        $scope.onlyInt($scope.companyInfo.licenseNumber);
+                    }else {
+                        $scope.string18($scope.companyInfo.licenseNumber);
+                    }
+                    if(resResult.data.city){
+                        $timeout(function () {
+                            $("#cityPicker").distpicker('destroy');
+                            $("#cityPicker").distpicker({
+                                autoSelect: false,
+                                placeholder: true
+                            });
+                            var province = $("#province");
+                            province.val(resResult.data.province);
+                            province.trigger("change");
+                            var city = $("#city");
+                            city.val(resResult.data.city);
+                            city.trigger("change");
+                        }, 0 , false)
+                    }
+                    if(resResult.data.licensePicURL){
+                        $scope.checked =true;
+                        $scope.listTip = "文件已上传，请勿反复提交";
+                        var textHtml = "<img src='"+resResult.data.licensePicURL+"'width='556px' height='230px'/>";
+                        $(".imageCrop").html(textHtml);
+                    }
+                    const checked = resResult.data.openEditions;
+                    console.log(checked);
+                    angular.forEach(checked,function (data) {
+                        $("input[value ="+ data+"]").attr("checked","checked");
+                    });
+//                    $("input[value ="+ resResult.data.openWeChatSubscription+"]").attr("checked","checked");
+                })
+            }else{
+                $('#cityPicker').distpicker();
+                $scope.companyInfo = {
+                    companyName:'',
+                    province:'',
+                    city:'',
+                    address:'',
+                    licenseType:'',
+                    licenseNumber:'',
+                    licensePicURL:'',
+                    openEditions:[],
+                    openWeChatSubscription:false
+                };
+            }
+
+            $scope.typeSelect = function () {
+                $scope.companyInfo.licenseNumber = "";
+                const value = $scope.companyInfo.licenseType;
+                if(value === "GENERAL"){
+                    $scope.flag = "code";
+                }else {
+                    $scope.flag = "number";
+                }
+            };
+
+            $scope.uploadImg = function () {
+                $timeout(function () {
+                    $("#fileImg").click();
+                },0,false)
+
+            };
+
+            $scope.listTip = "请选择上传图片，不得大于5M";
+            $scope.checked = false;
+            var input = document.getElementById("fileImg");
+            input.addEventListener('change',readFile,false);
+            function readFile() {
+                var fd = new FormData();
+                console.log(this.files);
+                var file = this.files[0];
+                if(file.size > 1024*1024*5){
+                    alert("上传图片过大，请压缩后再上传");
+                    return 0;
+                }
+                var fileName = file.name.toLowerCase().split('.');
+                if(fileName[fileName.length-1]!=='gif'&& fileName[fileName.length-1]!=='jpg'&& fileName[fileName.length-1]!=='bmp'
+                    && fileName[fileName.length-1]!=='png'&& fileName[fileName.length-1]!=='jpeg'){
+                    alert("上传图片格式错误，请重新上传");
+                    return 0;
+                }
+                fd.append("file", file);
+                $http({
+                    method: "POST",
+                    url: "upload/imageUpload",
+                    headers: {
+                        "Content-Type": undefined
+                    },
+                    timeout: 0,
+                    transformRequest: angular.identity,
+                    data: fd
+                }).success(function (resResult) {
+                    console.log(resResult);
+                    var imgRUL = "http://xiaojincom.oss-cn-hangzhou.aliyuncs.com/" + resResult.data.newFileName;
+                    $scope.companyInfo.licensePicURL = imgRUL;
+                    $scope.checked = true;
+                    $scope.listTip = "文件已上传，请勿反复提交";
+                    var textHtml = "<img src='"+imgRUL+"'width='546px' height='220px'/>";
+                    $(".imageCrop").html(textHtml);
+                }).error(function () {
+                    alert("上传图片失败！");
+                });
+            }
+
+            $scope.personSubmit = function(){
+                $scope.companyInfo.openEditions = [];
+                var checked = $("input[name='edition']:checked");
+                angular.forEach(checked,function (data) {
+                    console.log(data.value);
+                    $scope.companyInfo.openEditions.push(data.value);
+                });
+//                $scope.companyInfo.openWeChatSubscription = $("input[name='openWeChatSubscription']:checked")[0].value;
+                console.log($scope.companyInfo.openEditions);
+                if($rootScope.myinfo.company){
+                    $scope.link = "/company/updateCompanyInfo";
+                }else{
+                    $scope.link = "/company/register";
+                }
+                $http({method: "post", url: $scope.link, data:$scope.companyInfo}).then(function (response) {
+                    console.log(response.data);
+                    var resResult = response.data;
+                    if (resResult.status === 'fail') {
+                        alert(resResult.message);
+                    } else {
+                        alert("注册成功！");
+                        $rootScope.myinfo = resResult.data;
+                        $scope.companyInfo = {
+                            companyName:'',
+                            province:'',
+                            city:'',
+                            address:'',
+                            licenseType:'',
+                            licenseNumber:'',
+                            licensePicURL:'',
+                            openEditions:[]
+//                            openWeChatSubscription:false
+                        };
+                        $http.get("/user/myInfo").success(function(resResult){
+                            console.log(resResult);
+                            resResult = resResult.data;
+                            $rootScope.myinfo=resResult;
+                            console.log($rootScope.myinfo);
+                        });
+                        window.location.href= '/#/welcome';
+                    }
+                }, function(){
+
+                });
+            };
+            //普通营业执照校验--开始
+            $scope.singleLicense= {
+                message: "请输入注册号",
+                spanClass: "text-danger",
+                iClass: "fa fa-ban"
+            };
+            $scope.onlyInt =function (number) {
+                var reg = /^\d{13}$/;//13位数字
+                if (reg.test(number)){
+                    $scope.singleLicense = {
+                        message: "格式正确",
+                        spanClass: "text-success",
+                        iClass: "fa fa-check"
+                    }
+                }else{
+                    $scope.singleLicense= {
+                        message: "格式错误",
+                        spanClass: "text-danger",
+                        iClass: "fa fa-ban"
+                    }
+                }
+            };
+            //普通营业执照校验--结束
+            //多证合一营业执照校验--开始
+            $scope.multLicense= {
+                message: "请输入营业执照号码",
+                spanClass: "text-danger",
+                iClass: "fa fa-ban"
+            };
+            $scope.string18 = function (number) {
+                var reg = /^[a-zA-Z0-9_]{18}$/;//18位非汉字
+                if(reg.test(number)){
+                    $scope.multLicense= {
+                        message: "格式正确",
+                        spanClass: "text-success",
+                        iClass: "fa fa-check"
+                    }
+                }else {
+                    $scope.multLicense= {
+                        message: "格式错误",
+                        spanClass: "text-danger",
+                        iClass: "fa fa-ban"
+                    }
+                }
+            }
+            //多证合一营业执照校验--结束
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="approveCtrl">
+    <div class="content_wrap">
+        <div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-lg-3 control-label"></label>
+                    <div class="col-lg-6">
+                        &nbsp;
+                    </div>
+                </div>
+
+                <div class="form-group col-lg-13">
+                    <label class="col-lg-3 control-label"><span class="text-danger">*</span>企业名称:</label>
+                    <div class="col-lg-6">
+                        <input class="form-control" name="companyName" ng-model="companyInfo.companyName" placeholder="请输入企业名称" type="text">
+                    </div>
+                    <div class="col-lg-3" style="margin: 6px 0 0 -23px;">
+                        <span class="text-danger" ng-show="companyInfo.companyName.length<1"><i class="fa fa-ban"></i> 请输入企业名称</span>
+                        <span class="text-success" ng-show="companyInfo.companyName.length > 0"><i class="fa fa-check"></i> 格式正确</span>
+                    </div>
+                </div>
+
+                <div class="form-group" id="cityPicker" data-toggle="distpicker">
+                    <label class="col-lg-3 control-label"><span class="text-danger">*</span>所在地:</label>
+                    <div class="col-lg-3">
+                        <select data-province="请选择省份" class="form-control" id="province" ng-model="companyInfo.province" id="companyProvince"></select>
+                    </div>
+                    <div class="col-lg-3">
+                        <select data-city="请选择城市" class="form-control" id="city" ng-model="companyInfo.city" id="companyCity"></select>
+                    </div>
+                    <div class="col-lg-3" style="margin: 6px 0 0 -23px;">
+                        <span class="text-danger" ng-show="companyInfo.city.length<1"><i class="fa fa-ban"></i> 请选择所在城市</span>
+                        <span class="text-success" ng-show="companyInfo.city.length > 0"><i class="fa fa-check"></i> 格式正确</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-3 control-label"><span class="text-danger">*</span>详细地址:</label>
+                    <div class="col-lg-6">
+                        <input class="form-control" name="companyAddress" ng-model="companyInfo.address" placeholder="请输入详细地址" type="text">
+                    </div>
+                    <div class="col-lg-3" style="margin: 6px 0 0 -23px;">
+                        <span class="text-danger" ng-show="companyInfo.address.length < 1"><i class="fa fa-ban"></i>请输入详细地址</span>
+                        <span class="text-success" ng-show="companyInfo.address.length > 0"><i class="fa fa-check"></i> 格式正确</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-3 control-label"><span class="text-danger">*</span>证件类型:</label>
+                    <div class="col-lg-6">
+                        <select class="form-control" name="licenseType" ng-model="companyInfo.licenseType" ng-change="typeSelect()">
+                            <option value="GENERAL" selected="selected">普通营业执照</option>
+                            <option value="MULTIPLE">多证合一营业执照</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3" style="margin: 6px 0 0 -23px;">
+                        <span class="text-danger" ng-show="companyInfo.licenseType.length<1"><i class="fa fa-ban"></i> 请选择证件类型</span>
+                        <span class="text-success" ng-show="companyInfo.licenseType.length > 0"><i class="fa fa-check"></i> 格式正确</span>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="flag === 'code'">
+                    <label class="col-lg-3 control-label"><span class="text-danger">*</span>注册号:</label>
+                    <div class="col-lg-6">
+                         <input class="form-control" ng-model="companyInfo.licenseNumber" placeholder="请填写正确的注册号" type="text" ng-change="onlyInt(companyInfo.licenseNumber)">
+                    </div>
+                    <div class="col-lg-3" style="margin: 6px 0 0 -23px;">
+                        <span class="{{singleLicense.spanClass}}" ng-if="companyInfo.licenseNumber !== ''"><i class="{{singleLicense.iClass}}"></i> {{singleLicense.message}}</span>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-if="flag === 'number'">
+                    <label class="col-lg-3 control-label"><span class="text-danger">*</span>营业执照号码:</label>
+                    <div class="col-lg-6">
+                        <input class="form-control" ng-model="companyInfo.licenseNumber" type="text" ng-change="string18(companyInfo.licenseNumber)">
+                    </div>
+                    <div class="col-lg-3" style="margin: 6px 0 0 -23px;">
+                        <span class="{{multLicense.spanClass}}" ng-if="companyInfo.licenseNumber !== ''"><i class="{{multLicense.iClass}}"></i> {{multLicense.message}}</span>
+                        <!--<span class="text-success" ng-show="companyInfo.licenseNumber.length === 18"><i class="fa fa-check"></i> 格式正确</span>-->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-3 control-label"><span class="text-danger">*</span>上传营业执照:</label>
+                    <div class="col-lg-6">
+                        <a href="javascript:">
+                            <button class="file" ng-click="uploadImg()">选择文件</button>
+                            <input type="file" name="" ng-model="file" id="fileImg" style="display: none">
+                        </a>
+                    </div>
+                    <div class="col-lg-3" style="margin: 6px 0 0 -23px;">
+                        <span class="text-danger" ng-show="!checked"><i class="fa fa-ban"></i>{{listTip}}</span>
+                        <span class="text-success" ng-show="checked"><i class="fa fa-check"></i>{{listTip}}</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-3 control-label"></label>
+                    <div class="col-lg-6">
+                        <div class="imageCrop">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-3 control-label">选择版本:</label>
+                    <div class="col-lg-6">
+                        <label class="checkbox-inline i-checks">
+                            <input type="checkbox" value="PERSONJUNIOR" name="edition" checked disabled ><i></i> 基础版
+                        </label>
+                        <label class="checkbox-inline i-checks">
+                            <input type="checkbox" value="PERSONMOBILE" name="edition"><i></i> 通信板
+                        </label>
+                        <label class="checkbox-inline i-checks">
+                            <input type="checkbox" value="PERSONECOMMERCE" name="edition"><i></i> 淘宝版
+                        </label>
+                        <label class="checkbox-inline i-checks">
+                            <input type="checkbox" value="PERSONSENIOR" name="edition"><i></i> 全面版
+                        </label>
+                    </div>
+                </div>
+
+                <!--<div class="form-group">-->
+                    <!--<label class="col-lg-3 control-label">微信公众号（收费服务）:</label>-->
+                    <!--<div class="col-lg-4">-->
+                        <!--<label class="checkbox-inline i-checks">-->
+                            <!--<input type="radio" value="true" name="openWeChatSubscription"><i></i> 开通-->
+                        <!--</label>-->
+                        <!--<label class="checkbox-inline i-checks">-->
+                            <!--<input type="radio" value="false" name="openWeChatSubscription"><i></i>不开通-->
+                        <!--</label>-->
+                    <!--</div>-->
+                    <!--<div class="col-lg-3" style="margin: 6px 0 0 -23px;">-->
+                        <!--<span><a href="">为什么要开通微信公众号？</a></span>-->
+
+                    <!--</div>-->
+                <!--</div>-->
+
+                <div class="form-group">
+                    <label class="col-lg-3 control-label"></label>
+                    <div class="col-lg-6">
+                        &nbsp;
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-lg-offset-5 col-lg-7">
+                       <button  ng-click="personSubmit()" class="btn btn-sm btn-success">注册企业</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
