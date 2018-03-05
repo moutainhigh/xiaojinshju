@@ -22,6 +22,9 @@
                 $scope.personSeconds = 60;
                 $scope.personSendSMSText = '获取验证码';
                 $scope.personSendSMSPending = false;//验证码发送中的状态，60秒后可重发
+                if($scope.timer){
+                    clearInterval($scope.timer);
+                }
             };
 
             $scope.smsInit();
@@ -31,27 +34,29 @@
             $scope.personSms = function(phone){
 
                 if(phone.length !== 11){
-                    alert('请输入11位手机号，您输入'+ phone.length +'位');
+                    $rootScope.infoBox('请输入11位手机号，您输入'+ phone.length +'位');
                 } else{
                     $http({method: "get", url: '/user/registerSms?username=' + phone}).then(function (response) {
                         var resResult = response.data;
+                        console.log(resResult);
                         if (resResult.status == 'fail') {
-
+                            $rootScope.infoBox(resResult.message);
                         } else {
-
+                            $scope.personSendSMSPending = true;
+                            $scope.timer = setInterval(function () {
+                                $scope.personSeconds--;
+                                $scope.personSendSMSText = $scope.personSeconds + '秒后可重新发送';
+                                console.log($scope.personSeconds);
+                                if ($scope.personSeconds === 0) {
+                                    $scope.personSendSMSPending = false;
+                                    $scope.personSendSMSText = '获取验证码';
+                                    $scope.personSeconds = 60;
+                                    clearInterval($scope.timer);
+                                }
+                                $scope.$apply();
+                            }, 1000)
                         }
-                    }, function(){
-
-                    });
-                    $scope.personSendSMSPending = true;
-                    $interval(function(){
-                        $scope.personSeconds --;
-                        $scope.personSendSMSText = $scope.personSeconds + '秒后可重新发送';
-                    },1000,60).then(function(){
-                        $scope.personSendSMSPending = false;
-                        $scope.personSendSMSText = '获取验证码';
-                        $scope.personSeconds = 60;
-                    });
+                    })
                 }
             };
 
@@ -100,6 +105,7 @@
                     };
                 }else {
                     //用户存在
+                    console.log($scope.newTeam.sms);
                     $http({method:"GET",url:"/company/user/show?username="+$scope.newTeam.username}).then(
                         function (result) {
                             console.log(result);
@@ -111,23 +117,14 @@
                                     };
                                     $scope.newTeam.nickname = result.data.data.nickname;
                                     $scope.$apply();
-                                    $scope.httpInfo = {
-                                        "method": "GET",
-                                        "url": "/company/addTeam?companyName=" + $scope.name + "&userName="+$scope.newTeam.username
-                                    };
                                 },0,false)
                             }else{
                                 $timeout(function () {
                                     $scope.userVerify = {
                                         code: 'wrong',
-                                        message: "该用户不存在，请先注册"
+                                        message: "用户不存在，请先注册"
                                     };
                                     $scope.$apply();
-                                    $scope.httpInfo ={
-                                        "method":"POST",
-                                        "url":"/company/registerAddTeam?companyName=" + $scope.name,
-                                        "data":$scope.newTeam
-                                    };
                                 },0,false)
                             }
                         }
@@ -136,15 +133,26 @@
             };
 
             $scope.addPerson =function () {
-                console.log($scope.httpInfo);
+                if($scope.userVerify.code === 'right'){
+                    $scope.httpInfo = {
+                        "method": "GET",
+                        "url": "/company/addTeam?companyName=" + $scope.name + "&userName="+$scope.newTeam.username+"&sms="+$scope.newTeam.sms
+                    };
+                }else{
+                    $scope.httpInfo ={
+                        "method":"POST",
+                        "url":"/company/registerAddTeam?companyName=" + $scope.name,
+                        "data":$scope.newTeam
+                    };
+                }
                     $http($scope.httpInfo).then(
                         function (result) {
                             $timeout(function () {
                             if(result.data.status === "fail"){
-                                alert(result.data.message);
+                                $rootScope.infoBox(result.data.message);
                             }else {
                                 $("#create_team").modal("hide");
-                                alert("添加成功");
+                                $rootScope.infoBox("添加成功");
                                 $scope.teamFlag =false;
                                 $scope.getList(7,0);
                             }

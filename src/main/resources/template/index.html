@@ -20,6 +20,7 @@
         <!-- endbuild -->
     </head>
     <body ng-controller="AppCtrl">
+    <div class="loading" style="display: none"></div>
         <div class="all_wrap">
             <div class="header_wrap" style="-webkit-app-region: drag">
                 <div class="menu_wrap pull-left" on-finish-render="ngRepeatFinished">
@@ -71,7 +72,7 @@
                     </ul>
                 </div>
                 <div class="pull-right text-right" style="padding-top:72px;">
-                    <span ng-bind="myinfo.company.companyName"></span>&nbsp;&nbsp;&nbsp;<span ng-bind="myinfo.nickname"></span>&nbsp;&nbsp;&nbsp;<a ui-sref="finance" ng-if="myinfo.role.name == 'ROLE_MANAGER'">费用&充值</a>&nbsp;&nbsp;&nbsp;<a href="/logout">退出</a>&nbsp;&nbsp;
+                    <span ng-bind="myinfo.company.companyName"></span>&nbsp;&nbsp;&nbsp;<span ng-bind="myinfo.nickname"></span>&nbsp;&nbsp;&nbsp;<a ui-sref="employee_list" ng-if="myinfo.role.name == 'ROLE_MANAGER'">费用&充值</a>&nbsp;&nbsp;&nbsp;<a href="/logout">退出</a>&nbsp;&nbsp;
                 </div>
             </div>  
 

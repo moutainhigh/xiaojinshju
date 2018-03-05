@@ -76,6 +76,18 @@ public class TaoBaoPO extends BaseAnalyseItem {
      */
     @Column(columnDefinition = "text")
     private String deliverAddress;
+    
+    
+
+    @Override
+    public String toString() {
+        return "TaoBaoPO [name=" + name + ", taobaoNickName=" + taobaoNickName + ", mobile=" + mobile
+                + ", alipayAccount=" + alipayAccount + ", taobaoVIP=" + taobaoVIP + ", taobaoGrowth=" + taobaoGrowth
+                + ", alipayBalance=" + alipayBalance + ", yuebaoBalance=" + yuebaoBalance + ", antCheckLaterCreditLine="
+                + antCheckLaterCreditLine + ", antCheckLaterAvailableCredit=" + antCheckLaterAvailableCredit
+                + ", consumeOrder=" + consumeOrder + ", consumeAnsyc=" + consumeAnsyc + ", deliverAddress="
+                + deliverAddress + "]";
+    }
 
     public TaoBaoPO() {
         super();

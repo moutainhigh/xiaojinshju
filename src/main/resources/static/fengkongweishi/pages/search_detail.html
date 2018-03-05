@@ -10,7 +10,7 @@
 
             $scope.customerId  = null;
             $scope.searchHistoryList = null;
-            $scope.comment     = null;
+            $scope.comment     = '';
             $scope.commentList = null;
 
             //用于分页的flag
@@ -116,7 +116,7 @@
                 },{
                     id:8,
                     aFlag:false,
-                    item:'借款逾期',
+                    item:'信贷逾期',
                     color:1,
                     code:'overdueCreditVO'
                 },{
@@ -261,6 +261,14 @@
                         $scope.socialContactVO    = response.data.data.socialContactVO;
                         $scope.zhimaScoreVO       = response.data.data.zhimaScoreVO;
                         $scope.overdueCreditVO    = response.data.data.overdueCreditVO;
+                        //var obj = response.data.data;
+                        // for( var i in obj){
+                        //     angular.forEach($scope.barList,function(value,j) {
+                        //         if(value.code == i){
+                        //             value.color = obj[i].color;
+                        //         }
+                        //     })
+                        // }
                     }
                 })
             }
@@ -268,7 +276,6 @@
 
             //获取参数reportId
             $scope.id = $stateParams.id;
-            console.log($scope.id)
             $scope.reportId = '';
             if($scope.id != null){
                 localStorage.setItem('reportId',$scope.id);
@@ -323,6 +330,7 @@
                 })
             }
 
+            $scope.commentNum = '';
             //备注的列表
             $scope.getCommentList = function(page) {
                 $scope.commentList = null;
@@ -331,6 +339,7 @@
                     method: 'get'
                 }).then(function (response) {
                     $scope.commentList = response.data.data.content;
+                    $scope.commentNum = response.data.data.totalElements;
 
                     //分页功能
                     if(!$scope.commmentFlag && $scope.commentList.length !=0) {
@@ -393,8 +402,8 @@
 
             //添加备注
             $scope.addComment = function() {
-                if($scope.comment == null){
-                    alert('请添加备注')
+                if($scope.comment == ''){
+                    $rootScope.infoBox('请添加备注')
                     return false
                 }
                     $http({
@@ -409,20 +418,45 @@
                     }).then(function(response) {
                         if(response.data.status == 'success'){
                             $scope.comment = '';
-                            alert('备注添加成功')
-                            $scope.getCommentList(1)
+                            $rootScope.infoBox('备注添加成功');
+                            // $scope.commentNum = $scope.commentNum + 1;
+                            // var commentP = Math.ceil($scope.commentNum/6);
+                            $scope.getCommentList(1);
+                            layui.use(['laypage', 'layer'], function(){
+                                var laypage = layui.laypage;
+                                laypage.render({
+                                    elem: 'demo8'
+                                    ,count: Number($scope.commentNum + 1)
+                                    ,limit:6
+                                    ,prev: '上一页'
+                                    ,next: '下一页'
+                                    ,layout: [ 'prev', 'page', 'next']
+                                    ,jump: function(obj,first){
+                                        //首次不执行
+                                        if(!first){
+                                            //do something
+                                            $scope.commentList = null;
+                                            $scope.getCommentList(obj.curr);
+                                            $scope.commmentFlag = true;
+                                        }
+                                    }
+                                })
+                            })
                         }
                     })
             }
-6
+
             //打印报告
             $scope.printPdf = function() {
+                var index = layer.load(1, {
+                    shade: [0.5,'#fff'] //0.1透明度的白色背景
+                });
                 $http({
                     url:'print/pdf/'+$scope.reportId,
                     method:'get'
                 }).then(function(response) {
                     if(response.data.status == 'success') {
-                        window.open.location.href = response.data.data;
+                        window.location.href = 'http://' + response.data.data;
                     }
                 })
             }
@@ -434,16 +468,32 @@
             }
 
             //查看案件详情
-            $scope.showJudgeInfo = function(docId) {
-                $http({
-                    url:'/report/'+$scope.reportId+'/courtJudgmentDetail/'+docId,
-                    method:'get'
-                }).then(function(response) {
-                    $('#show_judgeInfo').modal('show');
-                    $('.court_formcontent').append(response.data.data.judgeResult);
-                })
+            $scope.showJudgeInfo = function(item) {
+
+                $scope.judgeInfo = item;
+                $scope.searchJudgeInfo = '';
+
+                $http.get("/user/myInfo").success(function(resResult){
+
+                    $http({
+                        url:'/report/'+$scope.reportId+'/courtJudgmentDetail/'+item.docId,
+                        method:'get',
+                        headers:{
+                            appCode:resResult.data.company.appCode,
+                            terminal:"WEB"
+                        }
+                    }).then(function(response) {
+                        $('#show_judgeInfo').modal('show');
+                        //$('.contentFont').append(response.data.data.judgeResult);
+                        $scope.searchJudgeInfo = response.data.data;
+                    })
+                });
             }
 
+            //查看消费订单详情
+            $scope.consumeOrder = function(){
+                $('#show_consume').modal('show');
+            }
         }]);
 </script>
 <div ng-controller="searchDetailCtrl">
@@ -452,16 +502,14 @@
         <div class="header_name pull-left">{{name}}</div>
         <div class="header_detail pull-left">
             <div>
-                <div ng-show="callRiskVO !=null" style="display:inline-block;margin-right:15px;">6个月内有{{callRiskVO.searchedOrganizationCount}}个企业查过TA[{{callRiskVO.searchedOrganizationType}}]</div>
                 <div ng-show="edition=='PERSONJUNIOR'" class="search_type">基础版</div>
                 <div ng-show="edition=='PERSONMOBILE'" class="search_type">通讯版</div>
                 <div ng-show="edition=='PERSONECOMMERCE'" class="search_type">淘宝版</div>
                 <div ng-show="edition=='PERSONSENIOR'" class="search_type">全面版</div>
-
             </div>
             <div style="margin-top:10px;">
                 <span>查询创建时间{{createAt}}</span>
-                <span style="margin-left:15px;color:#8C8C8C;">报告生成时间{{finishAt}}</span>
+                <span style="margin-left:15px;">报告生成时间{{finishAt}}</span>
             </div>
         </div>
         <div class="btn_box pull-right">
@@ -474,13 +522,13 @@
     <div style="height:520px;" class="app-content-body detail_content">
         <div class="left_bar pull-left">
             <ul class="barList">
-                <li ng-repeat='x in barList track by $index'  ng-show="response1[x.code]!=null" class="color_{{x.color}} bar_li" ng-class="{true:'selected',false:'unselected'}[x.aFlag]" ng-click='chooseInfo(x.id,x.code)'>{{x.item}}</li>
+                <li ng-repeat='x in barList track by $index'  ng-show="response1[x.code]!=null" class="color_{{response1[x.code].color}} bar_li" ng-class="{true:'selected',false:'unselected'}[x.aFlag]" ng-click='chooseInfo(x.id,x.code)'>{{x.item}}</li>
             </ul>
         </div>
         <div class="content pull-left" ng-click="closeWin()">
             <!--基本信息-->
             <div class="item_table idCardVO">
-                <div class="table_head">
+                <div class="table_head" style="margin-bottom:25px!important;">
                     <span class="table_title">基本信息</span>
                     <span class="title_tip">身份信息解析</span>
                 </div>
@@ -522,7 +570,7 @@
             </div>
             <!--身份验证-->
             <div class="item_table idCheckVO">
-                <div class="table_head">
+                <div class="table_head" style="margin-bottom:25px!important;">
                     <span class="table_title">身份验证</span>
                     <span class="title_tip">包含基本身份信息，及手机号，姓名，身份证，银行卡等校验</span>
                 </div>
@@ -548,8 +596,8 @@
                 </table>
             </div>
             <!--学历信息-->
-            <div class="item_table educationVO" ng-show="educationVO!=null">
-                <div class="table_head">
+            <div class="item_table educationVO" ng-show="educationVO.color!=null">
+                <div class="table_head" style="margin-bottom:25px!important;">
                     <span class="table_title">学历信息</span>
                     <span class="title_tip">包含毕业院校，学历，专业等信息查询</span>
                 </div>
@@ -584,8 +632,8 @@
                 </table>
             </div>
             <!--芝麻信用-->
-            <div class="item_table zhimaScoreVO" ng-show="zhimaScoreVO!=null">
-                <div class="table_head">
+            <div class="item_table zhimaScoreVO" ng-show="zhimaScoreVO.color!=null">
+                <div class="table_head" style="margin-bottom:25px!important;">
                     <span class="table_title">芝麻信用</span>
                     <span class="title_tip">蚂蚁金服旗下独立的第三方征信机构</span>
                 </div>
@@ -605,8 +653,8 @@
                 </table>
             </div>
             <!--财富信息-->
-            <div class="item_table wealthVO" ng-show="wealthVO!=null">
-                <div class="table_head">
+            <div class="item_table wealthVO" ng-show="wealthVO.color!=null">
+                <div class="table_head" style="margin-bottom:25px!important;">
                     <span class="table_title">财富信息</span>
                     <span class="title_tip">淘宝、支付宝、余额宝、花呗等信息查询</span>
                 </div>
@@ -653,14 +701,14 @@
                 </table>
             </div>
             <!--消费分析-->
-            <div class="item_table consumeVO" ng-show="consumeVO!=null">
+            <div class="item_table consumeVO" ng-show="consumeVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">消费分析</span>
                     <span class="title_tip">淘宝月度消费情况、及近期订单</span>
-                    <span class="more_btn pull-right">近期订单></span>
+                    <span class="more_btn pull-right more_consumeBtn" ng-click="consumeOrder()" >近期订单></span>
                 </div>
-                <div ng-if="consumeVO!=null" class="other_tip" style="">查询到{{consumeVO.consumeOrders.length}}条相关记录</div>
-                <table class="layui-table" ng-show="consumeVO.consumeOrders.length!=0">
+                <div ng-if="consumeVO!=null" class="other_tip" style="">查询到{{consumeVO.consumeAnsycs.length}}条相关记录</div>
+                <table class="layui-table" ng-show="consumeVO.consumeAnsycs.length!=0">
                     <colgroup>
                         <col width="200">
                         <col width="260">
@@ -668,9 +716,9 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>月份</th>
-                        <th>消费金额（元）</th>
-                        <th>消费次数</th>
+                        <th class="tdBg">月份</th>
+                        <th class="tdBg">消费金额（元）</th>
+                        <th class="tdBg">消费次数</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -683,7 +731,7 @@
                 </table>
             </div>
             <!--真实地址-->
-            <div class="item_table deliverAddressVO" ng-show="deliverAddressVO!=null">
+            <div class="item_table deliverAddressVO" ng-show="deliverAddressVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">真实地址</span>
                     <span class="title_tip">淘宝收货人姓名、地址、联系方式</span>
@@ -699,11 +747,11 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>姓名</th>
-                        <th>电话</th>
-                        <th>邮编</th>
-                        <th>地址</th>
-                        <th>备注</th>
+                        <th class="tdBg">姓名</th>
+                        <th class="tdBg">电话</th>
+                        <th class="tdBg">邮编</th>
+                        <th class="tdBg">地址</th>
+                        <th class="tdBg">备注</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -718,7 +766,7 @@
                 </table>
             </div>
             <!--多头借贷-->
-            <div class="item_table multipleHeadLendVO" ng-show="multipleHeadLendVO!=null">
+            <div class="item_table multipleHeadLendVO" ng-show="multipleHeadLendVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">多头借贷</span>
                     <span class="title_tip">验证是否命中网贷注册、申请、逾期失信黑名单</span>
@@ -731,8 +779,8 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>所属事件类型</th>
-                        <th>命中事件</th>
+                        <th class="tdBg">所属事件类型</th>
+                        <th class="tdBg">命中事件</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -744,7 +792,7 @@
                 </table>
             </div>
             <!--信贷逾期-->
-            <div class="item_table overdueCreditVO" ng-show="overdueCreditVO!=null">
+            <div class="item_table overdueCreditVO" ng-show="overdueCreditVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">信贷逾期</span>
                     <span class="title_tip">银行、P2P、网贷、各行业的黑名单、包括逾期、不良、失联等等</span>
@@ -757,8 +805,8 @@
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>所属事件类型</th>
-                            <th>命中事件</th>
+                            <th class="tdBg">所属事件类型</th>
+                            <th class="tdBg">命中事件</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -770,7 +818,7 @@
                 </table>
             </div>
             <!--潜在风险-->
-            <div class="item_table fraudVO" ng-show="fraudVO!=null">
+            <div class="item_table fraudVO" ng-show="fraudVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">潜在风险</span>
                     <span class="title_tip">基于腾讯大数据</span>
@@ -784,8 +832,8 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>所属事件类型</th>
-                        <th>命中事件</th>
+                        <th class="tdBg">所属事件类型</th>
+                        <th class="tdBg">命中事件</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -797,7 +845,7 @@
                 </table>
             </div>
             <!--刑事犯罪-->
-            <div class="item_table criminalVO" ng-show="criminalVO!=null">
+            <div class="item_table criminalVO" ng-show="criminalVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">刑事犯罪</span>
                     <span class="title_tip">案件烈性、案件数量、案件等级、刑罚时长、案件来源等信息</span>
@@ -813,7 +861,7 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>犯罪记录{{ $index+1 }}</th>
+                        <th class="tdBg">犯罪记录{{ $index+1 }}</th>
                         <th colspan="3"></th>
                     </tr>
                     </thead>
@@ -839,7 +887,7 @@
                 </table>
             </div>
             <!--法院失信-->
-            <div class="item_table dishonestBlackVO" ng-show="dishonestBlackVO!=null">
+            <div class="item_table dishonestBlackVO" ng-show="dishonestBlackVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">法院失信</span>
                     <span class="title_tip">执行类型、法院、地区、执行情况等信息</span>
@@ -852,52 +900,52 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>失信详情{{$index + 1}}</th>
+                        <th class="tdBg">失信详情{{$index + 1}}</th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
-                        <td>公告日期</td>
+                        <td class="tdBg">公告日期</td>
                         <td>{{ item.pubTime }}</td>
                     </tr>
                     <tr>
-                        <td>执行法院</td>
+                        <td class="tdBg">执行法院</td>
                         <td>{{ item.court }}</td>
                     </tr>
                     <tr>
-                        <td>省份</td>
+                        <td class="tdBg">省份</td>
                         <td>{{ item.area }}</td>
                     </tr>
                     <tr>
-                        <td>执行依据文号</td>
+                        <td class="tdBg">执行依据文号</td>
                         <td>{{ item.code}}</td>
                     </tr>
                     <tr>
-                        <td>案号</td>
+                        <td class="tdBg">案号</td>
                         <td>（2011）金浦执民字第01366号</td>
                     </tr>
+                    <!--<tr>-->
+                        <!--<td class="tdBg">做出执行依据单位</td>-->
+                        <!--<td>金华市人民法院</td>-->
+                    <!--</tr>-->
                     <tr>
-                        <td>做出执行依据单位</td>
-                        <td>金华市人民法院</td>
-                    </tr>
-                    <tr>
-                        <td>被执行人履行情况</td>
+                        <td class="tdBg">被执行人履行情况</td>
                         <td>{{ item.performance }}</td>
                     </tr>
                     <tr>
-                        <td>生效法律文书确定的义务</td>
+                        <td class="tdBg">生效法律文书确定的义务</td>
                         <td>{{ item.duty }}</td>
                     </tr>
                     <tr>
-                        <td>具体情形</td>
+                        <td class="tdBg">具体情形</td>
                         <td>{{ item.disruptType}}</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
             <!--法院判决-->
-            <div class="item_table courtJudgmentVO" ng-show="courtJudgmentVO!=null">
+            <div class="item_table courtJudgmentVO" ng-show="courtJudgmentVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">法院判决</span>
                     <span class="title_tip">判决文书类型、法院、地区、案由、判决结果等信息</span>
@@ -910,33 +958,33 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <td>法院判决{{ $index+1 }}</td>
-                        <td class="more_btn" style="text-align: right;font-size: 12px;color: #666;" ng-click="showJudgeInfo(item.docId)" >查看更多></td>
+                        <td class="tdBg">法院判决{{ $index+1 }}</td>
+                        <td style="text-align: right;" class="more_btn" ><span style="font-size: 12px; color:#afaaaf;"   ng-click="showJudgeInfo(item)">查看详情></span></td>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
-                        <td>案件标题</td>
+                        <td class="tdBg">案件标题</td>
                         <td>{{ item.title }}</td>
                     </tr>
                     <tr>
-                        <td>案件类型</td>
+                        <td class="tdBg">案件类型</td>
                         <td>{{ item.caseType }}</td>
                     </tr>
                     <tr>
-                        <td>审结时间</td>
+                        <td class="tdBg">审结时间</td>
                         <td>{{ item.concludeTime }}</td>
                     </tr>
                     <tr>
-                        <td>案件内容</td>
-                        <td>{{ item.content }}</td>
+                        <td class="tdBg">案件内容</td>
+                        <td ng-click="showJudgeInfo(item)">{{ item.content }}</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
             <!--通信数据-->
-            <div class="item_table carrierVO" ng-show="carrierVO!=null">
-                <div class="table_head">
+            <div class="item_table carrierVO" ng-show="carrierVO.color!=null">
+                <div class="table_head" style="margin-bottom:25px!important;">
                     <span class="table_title">通信数据</span>
                     <span class="title_tip">实名认证、姓名匹配、现居地、话费流量使用情况等信息</span>
                 </div>
@@ -978,12 +1026,12 @@
                 </table>
             </div>
             <!--社交分析-->
-            <div class="item_table socialContactVO" ng-show="socialContactVO!=null">
+            <div class="item_table socialContactVO" ng-show="socialContactVO.color!=null">
                 <div class="table_head" style="margin-bottom:35px;">
                     <span class="table_title">社交分析</span>
                     <span class="title_tip">关机情况、互通号码、活动区域等信息</span>
                 </div>
-                <div ng-if="socialContactVO!=null" class="other_tip" style="">查询到{{socialContactVO.linkmanChecks.length}}条相关记录</div>
+                <div ng-if="socialContactVO!=null" class="other_tip" >查询到{{socialContactVO.linkmanChecks.length}}条相关记录</div>
                 <div ng-show="socialContactVO!=null" ng-repeat="item in socialContactVO.linkmanChecks" class="social_content">
                     <div class="social_left">
                         <image></image>
@@ -1015,7 +1063,7 @@
                                 <p>{{ socialContactVO.regularCircle}}</p>
                             </li>
                             <li>
-                                <p>{{ socialContactVO.contactsClass1BlacklistInt}},{{socialContactVO.contactsClass2BlacklistInt}}人在黑名单中</p>
+                                <p>{{ socialContactVO.contactsClass1BlacklistCnt + socialContactVO.contactsClass2BlacklistCnt}}人在黑名单中</p>
                             </li>
                         </ul>
                     </div>
@@ -1036,10 +1084,16 @@
 
             </div>
             <!--风险统计-->
-            <div class="item_table callRiskVO" ng-show="callRiskVO!=null">
+            <div class="item_table callRiskVO" ng-show="callRiskVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">风险统计</span>
                     <span class="title_tip">通信风险信息统计</span>
+                </div>
+                <div ng-show="callRiskVO !=null" class="callRishTip">
+                    6个月内有{{callRiskVO.searchedOrganizationCount}}个企业查过TA
+                    <span ng-show="callRiskVO.searchedOrganizationType!='[]'">
+                        [{{callRiskVO.searchedOrganizationType}}]
+                    </span>
                 </div>
                 <!--<div class="other_tip" style="width:400px;">信用卡类号码经常联系，联系次数25次以上，且主动呼叫占比50%以上</div>-->
                 <table class="layui-table">
@@ -1050,42 +1104,45 @@
                     <tbody>
                     <tr>
                         <td>催收类号码</td>
-                        <td>{{callRiskVO.contactCollection}}</td>
+                        <td>
+                            <p class="risk_topP">{{callRiskVO.contactCollection}}</p>
+                            <ul>
+                                <li class="risk_li" ng-repeat="item in callRiskVO.contactCollectionEvidences">{{item}}</li>
+                            </ul>
+                        </td>
                     </tr>
                     <tr>
                         <td>贷款类号码</td>
-                        <td>{{callRiskVO.contactLoan}}</td>
+                        <td>
+                            <p class="risk_topP">{{callRiskVO.contactLoan}}</p>
+                            <ul>
+                                <li class="risk_li" ng-repeat='item in callRiskVO.contactLoanEvidences'>{{item}}</li>
+                            </ul>
+                        </td>
                     </tr>
                     <tr>
                         <td>信用卡类号码</td>
                         <td>
+                            <p class="risk_topP">{{callRiskVO.contactCreditCard}}</p>
                             <ul>
-                                <!--<li>-->
-                                    <!--<p>[光大银行]主叫12次共44分钟；被叫25次共44分钟</p>-->
-                                <!--</li>-->
-                                <li>
-                                    <p>{{callRiskVO.contactCreditCard}}</p>
-                                </li>
+                                <li class="risk_li" ng-repeat="item in callRiskVO.contactCreditCardEvidences">{{item}}</li>
                             </ul>
                         </td>
                     </tr>
                     <tr>
                         <td>银行类号码</td>
-                        <td>{{callRiskVO.contactBank}}</td>
+                        <td>
+                            <p class="risk_topP">{{callRiskVO.contactBank}}</p>
+                            <ul>
+                                <li class="risk_li" ng-repeat="item in callRiskVO.contactBankEvidences">{{item}}</li>
+                            </ul>
+                        </td>
                     </tr><tr>
                         <td>通话概况</td>
                         <td>
+                            <p class="risk_topP">{{callRiskVO.phoneCall}}</p>
                             <ul>
-                                <!--<li>数量众多（100以上，不含100）</li>-->
-                                <!--<li>-->
-                                    <!--<p>[总计]主叫12次共44分钟；被叫25次共44分钟；号码数11个</p>-->
-                                <!--</li>-->
-                                <!--<li>-->
-                                    <!--<p>[光大银行]主叫12次共44分钟；被叫25次共44分钟</p>-->
-                                <!--</li>-->
-                                <li>
-                                    <p>{{callRiskVO.phoneCall}}</p>
-                                </li>
+                                <li class="risk_li" ng-repeat="item in callRiskVO.phoneCallEvidences">{{item}}</li>
                             </ul>
                         </td>
                     </tr>
@@ -1093,7 +1150,7 @@
                 </table>
             </div>
             <!--通话名单-->
-            <div class="item_table callListVO" ng-show="callListVO!=null">
+            <div class="item_table callListVO" ng-show="callListVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">通话名单</span>
                     <span class="title_tip">根据通话频率显示联系人</span>
@@ -1102,20 +1159,20 @@
                 <table class="layui-table" ng-show="callListVO.callList.length!=0">
                     <colgroup>
                         <col width="150">
-                        <col width="150">
-                        <col width="150">
+                        <col width="100">
+                        <col width="200">
                         <col width="150">
                         <col width="150">
                         <col>
                     </colgroup>
                     <thead>
                     <tr>
-                        <th>号码</th>
-                        <th>城市</th>
-                        <th>公司</th>
-                        <th>主叫</th>
-                        <th>被叫</th>
-                        <th>总时长</th>
+                        <th class="tdBg">号码</th>
+                        <th class="tdBg">城市</th>
+                        <th class="tdBg">公司</th>
+                        <th class="tdBg">主叫</th>
+                        <th class="tdBg">被叫</th>
+                        <th class="tdBg">总时长</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -1131,12 +1188,12 @@
                 </table>
             </div>
             <!--车辆违章-->
-            <div class="item_table violationVO" ng-show="violationVO!=null">
+            <div class="item_table violationVO" ng-show="violationVO.color!=null">
                 <div class="table_head">
                     <span class="table_title">未处理车辆违章信息</span>
                     <span class="title_tip"></span>
                 </div>
-                <div ng-if="violationVO!=null" class="other_tip" style="">查询到{{violationVO.violationSet.length}}条相关记录</div>
+                <div ng-if="violationVO!=null" class="other_tip" style="">查询到{{violationVO.violationSet?violationVO.violationSet.length:0}}条相关记录</div>
                 <table class="layui-table" ng-repeat="item in violationVO.violationSet" ng-show="violationVO.violationSet.length!=0">
                     <colgroup>
                         <col width="150">
@@ -1166,7 +1223,7 @@
                     </tr>
                     <tr>
                         <td style="background-color:#F8F8F8;">违章处理原因</td>
-                        <td>{{item.reason}}</td>
+                        <td colspan="3">{{item.reason}}</td>
 
                     </tr>
                     </tbody>
@@ -1230,8 +1287,9 @@
             <div id="demo7" style="text-align: center"></div>
         </div>
     </div>
+    <!--案件详情的蒙太窗-->
     <div class="modal fade" id="show_judgeInfo" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog" style="width:942px!important;">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">
@@ -1240,22 +1298,109 @@
                     <h4 class="modal-title">案件内容</h4>
                 </div>
                 <div class="modal-body contentFont">
-                    <form class="form-horizontal">
-                        <div class="form-group">
-                            <div class="col-sm-8 court_formcontent">
 
-                            </div>
-                        </div>
-                    </form>
+                </div>
+                <table class="layui-table">
+                    <colgroup>
+                        <col width="150">
+                        <col width="320">
+                        <col width="150">
+                        <col width="320">
+                        <col>
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <td style="background-color:#F8F8F8;">案件标题</td>
+                        <td>{{ judgeInfo.title }}</td>
+                        <td style="background-color:#F8F8F8;">法院名称</td>
+                        <td>{{ searchJudgeInfo.court }}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#F8F8F8;">案件类别</td>
+                        <td>{{ judgeInfo.caseType }}</td>
+                        <td style="background-color:#F8F8F8;">案号</td>
+                        <td>{{ searchJudgeInfo.caseNum }}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#F8F8F8;">案由</td>
+                        <td>{{ searchJudgeInfo.caseCause }}</td>
+                        <td style="background-color:#F8F8F8;">案由编码</td>
+                        <td>{{searchJudgeInfo.caseCauseCode }}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#F8F8F8;">上诉人</td>
+                        <td>{{searchJudgeInfo.appellant }}</td>
+                        <td style="background-color:#F8F8F8;">被上诉人</td>
+                        <td>{{searchJudgeInfo.appellee}}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#F8F8F8;">审结程序</td>
+                        <td>{{ searchJudgeInfo.trialProcedure }}</td>
+                        <td style="background-color:#F8F8F8;">审结时间</td>
+                        <td>{{ judgeInfo.concludeTime }}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#F8F8F8;">案例摘要</td>
+                        <td colspan="3">{{ judgeInfo.content }}</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#F8F8F8;">判决结果</td>
+                        <td colspan="3">{{ searchJudgeInfo.judgeResult }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!--消费分析的蒙太窗-->
+    <div class="modal fade" id="show_consume" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">近期订单详情</h4>
+                </div>
+                <div class="modal-body contentFont">
+                    <table class="layui-table" ng-show="consumeVO.consumeOrders.length!=0" style="width:566px;">
+                        <colgroup>
+                            <col width="150">
+                            <col width="130">
+                            <col>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>消费时间</th>
+                            <th>消费金额（元）</th>
+                            <th>消费详情</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat = 'item in consumeVO.consumeOrders'>
+                            <td>{{ item.datetime }}</td>
+                            <td>{{ item.money }}</td>
+                            <td>{{ item.event }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <!--<div class="modal-footer">-->
-                    <!--<button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>-->
+                <!--<button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>-->
                 <!--</div>-->
             </div>
         </div>
     </div>
 </div>
 <style>
+    .callRishTip{
+        margin:15px 0px 10px 0px;
+        text-indent:5px;
+        line-height: 30px;
+    }
+    .tdBg{
+        background:#F8F8F8;
+    }
     label {
         box-shadow: none;
     }
@@ -1265,19 +1410,30 @@
     .unselected{
         background-color:#F8F8F8;
     }
-    .color_1{
-        color:#FF9800;
+    .color_SUCCESS{
+        color:#8BC34A;
     }
-    .color_2{
-        color:#BBBBBB;
+    .color_ATTENTION{
+        color:#B9C3E6;
     }
-    .color_3{
-        color:#A6B3E0;
+    .color_WARNING{
+        color:#FEA31B;
     }
-    .color_4{
+    .color_DANGER{
         color:#FF6363;
     }
-
+    .color_TIMEOUT{
+        color:#BBBBBB;
+    }
+    ul li{
+        list-style:none!important;
+    }
+    .risk_topP{
+        line-height: 40px;
+    }
+    .risk_li{
+        line-height: 25px;
+    }
     /*  header  */
     #search_header{
         width:100%;
@@ -1342,6 +1498,10 @@
 
 
     /*barList*/
+    .barList{
+        height:520px;
+        overflow-y:auto;
+    }
     .left_bar{
         display:inline-block;
         width:120px;
@@ -1390,8 +1550,8 @@
     .title_tip{
         display:inline-block;
         font-size:10px;
-        color:#DFDFDF;
-        margin-left:5px;
+        color:#aaaaaa;
+        margin-left:15px;
     }
     /*潜在风险*/
     .other_tip{
@@ -1403,7 +1563,7 @@
         /*border-bottom:1px solid #BBBBBB;*/
         text-indent:5px;
         line-height:30px;
-        margin:15px 0 25px 0;
+        margin:15px 0 10px 0;
     }
 
     /*社交分析*/
@@ -1416,7 +1576,7 @@
     .social_left{
         display:inline-block;
         float:left;
-        width:170px;
+        width:140px;
         margin-left:28px;
         margin-top:20px;
     }
@@ -1437,15 +1597,15 @@
     }
     /* common*/
     .table_head{
-        margin-bottom:35px!important;
+        margin-bottom:12px!important;
     }
     .more_btn{
         margin-right: 80px;
         color: #afaaaf;
         cursor:pointer;
     }
-    .more_btn:hover{
-        color:#333;
+    .more_btn:hover,.more_btn span:hover{
+        color:#333!important;
     }
     .layui-table{
         width:940px;

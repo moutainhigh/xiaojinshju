@@ -25,6 +25,7 @@
                             laypage.render({
                                 elem: 'companyTable'
                                 ,count: resResult.data.totalElements
+                                ,theme:"#4777B6"
                                 ,limit: 6
                                 ,limits:[5,6,7]
                                 , layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
@@ -57,6 +58,7 @@
                             laypage.render({
                                 elem: 'logTable'
                                 ,count: resResult.data.totalElements
+                                ,theme:"#4777B6"
                                 ,limit: 7
                                 ,limits:[5,6,7]
                                 , layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
@@ -94,15 +96,15 @@
 
             $scope.submitPass = function () {
                 if($scope.passed === "0" && $("#content").text().trim() === "") {
-                    alert("请添加审核意见");
+                    $rootScope.infoBox("请添加审核意见");
                 }else {
                         $http({method:"POST",url:"/admin/companyVerify/"+$scope.applyInfo.id+"?result="+$scope.passed+"&reason="+$("#content").text()}).then(
                             function (result) {
                                 console.log(result);
                                 if(result.data.status === "fail"){
-                                    alert(result.data.message);
+                                    $rootScope.infoBox(result.data.message);
                                 }else{
-                                    alert("审核完成");
+                                    $rootScope.infoBox("审核完成");
                                     $scope.getLogList(7,0);
                                     $scope.getCompanyList(6,0);
                                     $('#show_apply').modal('hide');
@@ -155,10 +157,10 @@
                     <li class="layui-this">企业列表</li>
                     <li>审核记录</li>
                 </ul>
-                <div class="layui-tab-content contentFont" style="height: 100px;">
+                <div class="layui-tab-content contentFont" style="padding: 0px 35px">
                     <!--企业列表-->
                     <div class="layui-tab-item layui-show">
-                        <table class="layui-table" lay-even="" lay-skin="nob" style="margin-top: 30px">
+                        <table class="layui-table" style="margin: 30px 0">
                             <colgroup>
                                 <col width="150">
                                 <col width="150">
@@ -199,11 +201,11 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <div id="companyTable" style="text-align: center"></div>
+                        <div id="companyTable" class="pageBar" style="top: 500px"></div>
                     </div>
                     <!--审核记录-->
                     <div class="layui-tab-item">
-                        <table class="layui-table" lay-even="" lay-skin="nob" style="margin-top: 30px">
+                        <table class="layui-table" style="margin: 30px 0px">
                             <colgroup>
                                 <col width="150">
                                 <col width="150">
@@ -253,7 +255,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <div id="logTable" style="text-align: center"></div>
+                        <div id="logTable" class="pageBar" style="top: 500px"></div>
                     </div>
                 </div>
             </div>

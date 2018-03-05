@@ -6,7 +6,6 @@ import fengkongweishi.enums.LicenseTypeEnum;
 import fengkongweishi.enums.SystemEditionEnum;
 import fengkongweishi.handle.DateTimeSerializer;
 
-import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -27,23 +26,15 @@ public class CompanyVO {
     private Integer remainder = 0;
     private Date verifyTime;
     private Date createTime;
-    @Enumerated(EnumType.STRING)
     private CompanyStatusEnum status;
-    @ElementCollection
-    @CollectionTable(name="companyOpenEditions")
-    @MapKeyJoinColumn(name="companyId")
-    @Column(name="edition")
-    @Enumerated(EnumType.STRING)
     private List<SystemEditionEnum> openEditions;
     private Integer teamCount;
     private Integer employeeCount;
     private String province;
     private String city;
     private String address;
-    @Enumerated(EnumType.STRING)
     private LicenseTypeEnum licenseType;
     private String licenseNumber;
-    @Column(columnDefinition = "text")
     private String licensePicURL;
     private CompanyVO parent;
     private String appCode;
@@ -76,6 +67,7 @@ public class CompanyVO {
     public Integer getId() {
         return id;
     }
+
     @JsonSerialize(using = DateTimeSerializer.class)
     public Date getCreateTime() {
         return createTime;
@@ -212,15 +204,14 @@ public class CompanyVO {
     }
 
 
-
     public CompanyVO(Company company) {
         this.id = company.getId();
         this.appCode = company.getAppCode();
         this.companyName = company.getCompanyName();
-        if(company.getManager() == null){
+        if (company.getManager() == null) {
             this.managerName = null;
             this.managerMobile = null;
-        }else{
+        } else {
             this.managerName = company.getManager().getNickname();
             this.managerMobile = company.getManager().getUsername();
         }
@@ -231,11 +222,11 @@ public class CompanyVO {
         this.openEditions = company.getOpenEditions().stream().sorted().collect(Collectors.toList());
         this.teamCount = company.getChildren().size();
         Integer employeeNumber = company.getEmployees().size();
-        if(company.getChildren().size() == 0){
+        if (company.getChildren().size() == 0) {
             employeeNumber = company.getEmployees().size();
-        }else {
+        } else {
             Set<Company> children = company.getChildren();
-            for(Company company1:children){
+            for (Company company1 : children) {
                 employeeNumber += company1.getEmployees().size();
             }
         }
@@ -246,7 +237,7 @@ public class CompanyVO {
         this.licenseNumber = company.getLicenseNumber();
         this.licensePicURL = company.getLicensePicURL();
         this.licenseType = company.getLicenseType();
-        if (company.getParent()!=null) {
+        if (company.getParent() != null) {
             this.parent = new CompanyVO(company.getParent());
         } else {
             this.parent = null;

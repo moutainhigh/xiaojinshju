@@ -1,0 +1,182 @@
+<script>
+
+    "use strict";
+    app.controller("carrierCtrl", [
+        "$scope", "$http", "$rootScope", '$state', '$interval', '$timeout', "$stateParams", "$filter",
+        function ($scope, $http, $rootScope, $state, $interval, $timeout, $stateParams, $filter) {
+            $scope.edition = $stateParams.edition ? $stateParams.edition : sessionStorage.getItem('edition');
+            $scope.id = $stateParams.reportId;
+            $scope.username = $stateParams.username;
+            $scope.phone = $stateParams.phone;
+            $scope.idCard = $stateParams.idCard;
+            $scope.appCode = $stateParams.appCode;
+            $scope.today = $rootScope.getDate();
+            $scope.endStep = false;
+            $scope.loading = false;
+            if ($scope.edition === "PERSONMOBILE") {
+                $scope.endStep = true;
+            }
+
+            const localUrl = location.host;
+
+            $scope.mobileData = {
+                phone: $scope.phone,
+                name: $scope.username,
+                idCard: $scope.idCard,
+                linkman1Name:"",
+                linkman1Relationship:"",
+                linkman1Mobile:"",
+                linkman2Name:"",
+                linkman2Relationship:"",
+                linkman2Mobile:""
+            };
+            //判断是否是重新查询
+            if($stateParams.searFlag) {
+                $scope.mobileData = {
+                    phone: JSON.parse(sessionStorage.getItem('mobileData')).phone,
+                    name: JSON.parse(sessionStorage.getItem('mobileData')).name,
+                    idCard: JSON.parse(sessionStorage.getItem('mobileData')).idCard,
+                    linkman1Name: JSON.parse(sessionStorage.getItem('mobileData')).linkman1Name,
+                    linkman1Relationship: JSON.parse(sessionStorage.getItem('mobileData')).linkman1Relationship,
+                    linkman1Mobile: JSON.parse(sessionStorage.getItem('mobileData')).linkman1Mobile,
+                    linkman2Name: JSON.parse(sessionStorage.getItem('mobileData')).linkman2Name,
+                    linkman2Relationship: JSON.parse(sessionStorage.getItem('mobileData')).linkman2Relationship,
+                    linkman2Mobile: JSON.parse(sessionStorage.getItem('mobileData')).linkman2Mobile
+                };
+            }
+
+
+            $scope.next = function () {
+                for (var key in $scope.mobileData) {
+                    if ($scope.mobileData[key] === "") {
+                        console.log($scope.mobileData[key]);
+                        $rootScope.infoBox("请完善信息");
+                        return 0;
+                    }
+                }
+                $scope.storeData();
+                $http({
+                    method: "POST",
+                    url: "/report/" + $scope.id + "/carrier",
+                    headers:{
+                        appCode: $scope.appCode,
+                        terminal: "WEB"
+                    },
+                    data: $scope.mobileData
+                }).then(function (result) {
+                    console.log(result);
+                    if (result.data.status === "success") {
+                        if ($scope.edition === "PERSONSENIOR") {
+//                            $state.go('taobao', {
+//                                reportId: $scope.id,
+//                                edition: $scope.edition,
+//                                username: $scope.username,
+//                                phone: $scope.phone,
+//                                idCard: $scope.idCard,
+//                                appCode:$scope.appCode,
+//                                searFlag:$stateParams.searFlag
+//                            });
+                            var backUrl = "http://"+localUrl+"/#/taobao";
+                            backUrl = encodeURIComponent(backUrl);
+                            var parm = encodeURIComponent("{\"phone\":\""+ $scope.phone+"\",\"name\":\""+$scope.username+"\",\"idcard\":\""+$scope.idCard+"\"}");
+                            window.location.href = "http://118.31.239.203:9000/index.html#/carrier?apiKey=6ff50306859441f1b977a3e203dbe5c7&userId="+$scope.id+"&backUrl="+backUrl+"&loginParams="+parm;
+                        } else if ($scope.edition === "PERSONMOBILE") {
+                            var backUrl = "http://"+localUrl+"/#/search_detail/"+$scope.id;
+                            backUrl = encodeURIComponent(backUrl);
+                            window.location.href = "http://118.31.239.203:9000/index.html#/carrier?apiKey=6ff50306859441f1b977a3e203dbe5c7&userId="+$scope.id+"&backUrl="+backUrl;
+                            //+"&loginParams={\"phone\":\""+ $scope.phone+"\",\"name\":\""+$scope.username+"\",\"idcard\":\""+$scope.idCard+"\"}"
+                        }
+                    } else {
+                        $rootScope.infoBox(result.data.message);
+                    }
+                })
+            };
+
+            $scope.passStep = function () {
+                $state.go('taobao', {reportId: $scope.id,edition: $scope.edition,username:$scope.username,phone:$scope.phone,idCard:$scope.idCard,appCode:$scope.appCode,searFlag:$stateParams.searFlag});
+            };
+
+
+            $scope.passStart = function () {
+                $state.go("search_detail",{id:$scope.id});
+            };
+
+
+            $scope.storeData = function () {
+                sessionStorage.setItem('phone',$scope.mobileData.phone);
+                sessionStorage.setItem('username',$scope.mobileData.username);
+                sessionStorage.setItem('idCard',$scope.mobileData.idCard);
+                sessionStorage.setItem('reportId',$scope.id);
+                sessionStorage.setItem('appCode',$scope.appCode);
+                sessionStorage.setItem('linkman1Name',$scope.mobileData.linkman1Name);
+                sessionStorage.setItem('linkman1Relationship',$scope.mobileData.linkman1Relationship);
+                sessionStorage.setItem('linkman1Mobile',$scope.mobileData.linkman1Mobile);
+                sessionStorage.setItem('linkman2Name',$scope.mobileData.linkman2Name);
+                sessionStorage.setItem('linkman2Relationship',$scope.mobileData.linkman2Relationship);
+                sessionStorage.setItem('linkman2Mobile',$scope.mobileData.linkman2Mobile);
+            }
+
+        }]);</script>
+<div class="body_wrap list_page" ng-controller="carrierCtrl">
+    <div class="warp_content" style="height:518px;">
+        <div class="hbox hbox-auto-xs bg-white">
+            <div class="col" style="width:65%">
+                <div class="auth_title_warp" ng-model="editionInfo" style="width: 160px">
+                    <img src="/fengkongweishi/images/Authentication.png" height="30" width="26"/>
+                    <div class="auth_title">运营商认证</div>
+                </div>
+                <div class="vbox">
+                    <div class="row-row">
+                        <div class="cell scrollable hover">
+                            <div class="cell-inner wrapper-md">
+                                <form class="form-horizontal ng-pristine ng-valid ng-valid-date ng-valid-required ng-valid-date-disabled">
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">联系人1</label>
+                                        <div class="col-sm-2" style="width: 18%">
+                                            <select class="form-control" name="linkman1" ng-model="mobileData.linkman1Relationship">
+                                                <option value="配偶" selected>配偶</option>
+                                                <option value="父母">父母</option>
+                                                <option value="兄妹">兄妹</option>
+                                                <option value="子女">子女</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input class="form-control" type="text" ng-model="mobileData.linkman1Name" placeholder="姓名"/>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <input class="form-control" type="text" ng-model="mobileData.linkman1Mobile" placeholder="手机号"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">联系人2</label>
+                                        <div class="col-sm-2" style="width: 18%">
+                                            <select class="form-control" name="linkman2" ng-model="mobileData.linkman2Relationship">
+                                                <option value="朋友" selected>朋友</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input class="form-control" type="text" ng-model="mobileData.linkman2Name" placeholder="姓名"/>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <input class="form-control" type="text" ng-model="mobileData.linkman2Mobile" placeholder="手机号"/>
+                                        </div>
+                                    </div>
+                                    <div class="input-btn-group" style="margin-top:110px;padding: 0">
+                                        <label class=" control-label"></label>
+                                        <button class="layui-btn layui-btn-normal" ng-click="next()">下一步</button>
+                                        <div>
+                                            <p ng-if="endStep" ng-click="passStart()">跳过并查询></p>
+                                            <p ng-if="!endStep" ng-click="passStep()">跳过认证></p>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

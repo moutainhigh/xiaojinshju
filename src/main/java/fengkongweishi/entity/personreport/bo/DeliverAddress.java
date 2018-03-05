@@ -30,8 +30,14 @@ public class DeliverAddress {
     @Info(label = "是否是默认收货地址", tip = "", placeholder = "", help = "", secret = "")
     private String defaultAddress;
 
-   
+    
 
+
+    @Override
+    public String toString() {
+        return "DeliverAddress [name=" + name + ", phone=" + phone + ", zipCode=" + zipCode + ", address=" + address
+                + ", defaultAddress=" + defaultAddress + "]";
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -334,6 +334,7 @@ public class AnalyseService {
                                         ((HashMap) row).get("caseSource").toString(),
                                         ((HashMap) row).get("casePeriod").toString(),
                                         ((HashMap) row).get("caseLevel").toString())));
+                        criminalPO.setCriminals(criminals);
                     } else {
                         criminalPO.setColor(Color.SUCCESS);
                         criminalPO.setCount(0);
@@ -400,13 +401,13 @@ public class AnalyseService {
                         courtJudgmentPO.setCourtJudgments(new HashSet<>());
                         ((ArrayList) result.get("docList")).stream().sorted(AnalyseService::compareConcludeTime)
                                 .forEachOrdered(row -> {
-                                    fengkongweishi.entity.personreport.po.CourtJudgment courtJudgment = new fengkongweishi.entity.personreport.po.CourtJudgment(
+                                    CourtJudgmentPOItem courtJudgmentPOItem = new CourtJudgmentPOItem(
                                             ((HashMap) row).get("docId").toString(),
                                             ((HashMap) row).get("title").toString(),
                                             ((HashMap) row).get("dataType").toString(),
                                             new Date(Long.valueOf(((HashMap) row).get("concludeTime").toString())),
                                             ((HashMap) row).get("content").toString(), courtJudgmentPO);
-                                    courtJudgmentPO.getCourtJudgments().add(courtJudgment);
+                                    courtJudgmentPO.getCourtJudgments().add(courtJudgmentPOItem);
                                 });
                         courtJudgmentPO.setColor(Color.WARNING);
                         if (count > 1) {
@@ -426,8 +427,8 @@ public class AnalyseService {
         return new AsyncResult<>(courtJudgmentPO);
     }
 
-    public void handleCourtJudgmentDetail(fengkongweishi.entity.personreport.po.CourtJudgment courtJudgment) {
-        Map detailResult = fetchService.fetchCourtJudgmentDetail(courtJudgment.getDocId());
+    public void handleCourtJudgmentDetail(CourtJudgmentPOItem courtJudgmentPOItem) {
+        Map detailResult = fetchService.fetchCourtJudgmentDetail(courtJudgmentPOItem.getDocId());
         if (!"0000".equals(detailResult.get("resCode"))) {
             return;
         }
@@ -452,15 +453,15 @@ public class AnalyseService {
         String appellant = String.join(",", appellantList);
         String appellee = String.join(",", appelleeList);
 
-        courtJudgment.setAppellant(appellant);
-        courtJudgment.setAppellee(appellee);
-        courtJudgment.setCaseCause((String) detailResultResult.get("caseNum"));
-        courtJudgment.setCaseCauseCode((String) detailResultResult.get("caseCauseCode"));
-        courtJudgment.setCaseNum((String) detailResultResult.get("caseNum"));
-        courtJudgment.setCourt((String) detailResultResult.get("court"));
-        courtJudgment.setJudgeResult((String) detailResultResult.get("judgeResult"));
-        courtJudgment.setTrialProcedure((String) detailResultResult.get("trialProcedure"));
-        courtJudgment.setQueried(true);
+        courtJudgmentPOItem.setAppellant(appellant);
+        courtJudgmentPOItem.setAppellee(appellee);
+        courtJudgmentPOItem.setCaseCause((String) detailResultResult.get("caseNum"));
+        courtJudgmentPOItem.setCaseCauseCode((String) detailResultResult.get("caseCauseCode"));
+        courtJudgmentPOItem.setCaseNum((String) detailResultResult.get("caseNum"));
+        courtJudgmentPOItem.setCourt((String) detailResultResult.get("court"));
+        courtJudgmentPOItem.setJudgeResult((String) detailResultResult.get("judgeResult"));
+        courtJudgmentPOItem.setTrialProcedure((String) detailResultResult.get("trialProcedure"));
+        courtJudgmentPOItem.setQueried(true);
     }
 
     public TaoBaoPO handleMoxieTaoBao(PersonReport report) {
@@ -469,7 +470,7 @@ public class AnalyseService {
             return null;
         }
         JSONObject taobaoData = moxieService.fetchTaoBaoOriginalData(report.getMoxieTaskTaobao());
-        
+
         JSONObject basic_info = taobaoReport.getJSONObject("basic_info");
         JSONObject wealth_info = taobaoReport.getJSONObject("wealth_info");
         JSONObject user_and_account_basic_info = basic_info.getJSONObject("user_and_account_basic_info");
@@ -488,7 +489,8 @@ public class AnalyseService {
             taoBaoPO.setTaobaoNickName(taobaoData.getJSONObject("userinfo").getString("nick"));
             taoBaoPO.setColor(Color.SUCCESS);
         }
-       
+        System.out.println(taoBaoPO);
+
         JSONObject consumption_analysis = taobaoReport.getJSONObject("consumption_analysis");
         JSONObject total_consumption = consumption_analysis.getJSONObject("total_consumption");
         JSONObject total_consum_amt = total_consumption.getJSONObject("total_consum_amt");
@@ -532,7 +534,7 @@ public class AnalyseService {
         } else {
             taoBaoPO.setColor(Color.TIMEOUT);
         }
-        
+
         JSONArray deliverAddresses = new JSONArray();
         if (taobaoData == null) {
             taoBaoPO.setColor(Color.DANGER);
@@ -553,7 +555,6 @@ public class AnalyseService {
         return taoBaoPO;
     }
 
-    
 
     public CarrierPO handleMoxieCarrier(PersonReport report) {
         JSONObject moxieReport = moxieService.fetchCarrierReport(report);
@@ -629,24 +630,29 @@ public class AnalyseService {
         for (Object o : behaviorCheckArray) {
             JSONObject behaviorCheckItem = (JSONObject) o;
             if ("contact_collection".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO.setContactCollection(getResultAndEvidence(behaviorCheckItem));
+                carrierPO.setContactCollection(getBehaviorResult(behaviorCheckItem));
+                carrierPO.setContactCollectionEvidences(getBehaviorEvidence(behaviorCheckItem));
             } else if ("contact_loan".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO.setContactLoan(getResultAndEvidence(behaviorCheckItem));
+                carrierPO.setContactLoan(getBehaviorResult(behaviorCheckItem));
+                carrierPO.setContactLoanEvidences(getBehaviorEvidence(behaviorCheckItem));
             } else if ("contact_credit_card".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO.setContactCreditCard(getResultAndEvidence(behaviorCheckItem));
+                carrierPO.setContactCreditCard(getBehaviorResult(behaviorCheckItem));
+                carrierPO.setContactCreditCardEvidences(getBehaviorEvidence(behaviorCheckItem));
             } else if ("contact_bank".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO.setContactBank(getResultAndEvidence(behaviorCheckItem));
+                carrierPO.setContactBank(getBehaviorResult(behaviorCheckItem));
+                carrierPO.setContactBankEvidences(getBehaviorEvidence(behaviorCheckItem));
             } else if ("phone_call".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO.setPhoneCall(getResultAndEvidence(behaviorCheckItem));
+                carrierPO.setPhoneCall(getBehaviorResult(behaviorCheckItem));
+                carrierPO.setPhoneCallEvidences(getBehaviorEvidence(behaviorCheckItem));
             } else if ("regular_circle".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO.setRegularCircle(
-                        behaviorCheckItem.get("result") + "<br/>" + behaviorCheckItem.get("evidence"));
+                carrierPO.setRegularCircle(behaviorCheckItem.getString("result"));
+                carrierPO.setRegularCircleEvidence(behaviorCheckItem.getString("evidence"));
             } else if ("phone_silent".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO
-                        .setPhoneSilent(behaviorCheckItem.get("result") + "<br/>" + behaviorCheckItem.get("evidence"));
+                carrierPO.setPhoneSilent(behaviorCheckItem.getString("result"));
+                carrierPO.setPhoneSilentEvidence(behaviorCheckItem.getString("evidence"));
             } else if ("contact_each_other".equals(behaviorCheckItem.getString("check_point"))) {
-                carrierPO.setContactEachOther(
-                        behaviorCheckItem.get("result") + "<br/>" + behaviorCheckItem.get("evidence"));
+                carrierPO.setContactEachOther(behaviorCheckItem.getString("result"));
+                carrierPO.setContactEachOtherEvidence(behaviorCheckItem.getString("evidence"));
             }
         }
 
@@ -714,80 +720,32 @@ public class AnalyseService {
         return null;
     }
 
-    private String getResultAndEvidence(JSONObject behaviorCheckItem) {
+    private String getBehaviorResult(JSONObject behaviorCheckItem) {
+        return behaviorCheckItem.getString("result");
+    }
+
+    private JSONArray getBehaviorEvidence(JSONObject behaviorCheckItem) {
         String result = behaviorCheckItem.getString("result");
         String evidence = behaviorCheckItem.getString("evidence");
-        String str = result;
-        if (!result.contains("无")) {
-            str += "<br/>";
-            String[] split = evidence.split("，");
-            List<String> rows = new ArrayList<>();
-            for (String aSplit : split) {
-                if (aSplit.startsWith("联系列表：")) {
-                    rows.add(aSplit.substring(5));
-                } else {
-                    rows.add(aSplit);
-                }
-            }
-            str += String.join("<br/>", rows);
+        if (result.contains("无")) {
+            return new JSONArray();
         }
-        return str;
+        String[] split = evidence.split("，");
+        List<String> rows = new ArrayList<>();
+        for (String aSplit : split) {
+            if (aSplit.startsWith("联系列表：")) {
+                rows.add(aSplit.substring(5));
+            } else {
+                rows.add(aSplit);
+            }
+        }
+        return JSONArray.parseArray(JSON.toJSONString(rows));
     }
 
     private static int compareConcludeTime(Object row1, Object row2) {
         long time1 = Long.valueOf(((HashMap) row1).get("concludeTime").toString());
         long time2 = Long.valueOf(((HashMap) row2).get("concludeTime").toString());
         return (int) (time2 - time1);
-    }
-
-    private String convertBlackFactsTypeE(String blackFactsType) {
-        // E01：7天内多头借贷 E02：1月内多头借贷 E03：3月内多头借贷 E04：疑似多头借
-        switch (blackFactsType) {
-            case "E01":
-                return "7天内多头借贷";
-            case "E02":
-                return "1月内多头借贷";
-            case "E03":
-                return "3月内多头借贷";
-            case "E04":
-                return "疑似多头借贷";
-            case "":
-                return "放款平台";
-            default:
-                return "";
-        }
-    }
-
-    private String convertBlackFactsTypeD(String blackFactsType) {
-        // D01：疑似催收风险 D02：名下公司存在违规行为（被税务局或者工商局公示） D03：来自信贷高风险区域 D04：其他潜在风险
-        switch (blackFactsType) {
-            case "D01":
-                return "疑似催收风险";
-            case "D02":
-                return "名下公司存在违规行为(被税务局或者工商局公示)";
-            case "D03":
-                return "来自信贷高风险区域";
-            case "D04":
-                return "其他潜在风险";
-            default:
-                return "";
-        }
-    }
-
-    private String convertBlackFactsTypeB(String blackFactsType) {
-        // B01：失联 B02：贷款不良（逾期90天以上未还） B03：短时逾期 B04：逾期
-        switch (blackFactsType) {
-            case "B01":
-                return "失联";
-            case "B02":
-                return "贷款不良";
-            case "B03":
-                return "短时逾期";
-            case "B04":
-                return "逾期";
-            default:
-                return "";
-        }
     }
 
     private String convertCollegeType(String collegeType) {

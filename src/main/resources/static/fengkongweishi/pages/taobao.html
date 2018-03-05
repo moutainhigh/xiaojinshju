@@ -5,19 +5,19 @@
         "$scope", "$http", "$rootScope", '$state', '$interval', '$timeout', "$stateParams", "$filter",
         function ($scope, $http, $rootScope, $state, $interval, $timeout, $stateParams, $filter) {
             $scope.edition = $stateParams.edition ? $stateParams.edition : sessionStorage.getItem('edition');
-            $scope.id = $stateParams.reportId;
-            $scope.username = $stateParams.username;
-            $scope.phone = $stateParams.phone;
-            $scope.idCard = $stateParams.idCard;
-            $scope.appCode = $stateParams.appCode;
+            $scope.id = $stateParams.reportId ? $stateParams.reportId : sessionStorage.getItem('reportId');
+            $scope.username = $stateParams.username ? $stateParams.username : sessionStorage.getItem('username');
+            $scope.phone = $stateParams.phone ? $stateParams.phone : sessionStorage.getItem('phone');
+            $scope.idCard = $stateParams.idCard ? $stateParams.idCard : sessionStorage.getItem('idCard');
+            $scope.appCode = $stateParams.appCode ? $stateParams.appCode : sessionStorage.getItem('appCode');
             $scope.today = $rootScope.getDate();
-            $scope.endStep = false;
+            $scope.endStep = true;
             $scope.clickFlag = true;
 
             $scope.imgUrl = "";
-            if ($scope.edition === "PERSONECOMMERCE" || $scope.edition === "PERSONSENIOR") {
-                $scope.endStep = true;
-            }
+//            if ($scope.edition === "PERSONECOMMERCE" || $scope.edition === "PERSONSENIOR") {
+//                $scope.endStep = true;
+//            }
 
             $scope.taobao ={
                 moxieTaskTaobao:""
@@ -88,38 +88,18 @@
                             }
                             $scope.tip = result.data.description === "等待扫码" ? "请打开手机淘宝扫此二维码" : result.data.description;
                             if(result.data.phase_status === 'DONE_SUCC'){
-                                $http({
-                                    method: "POST",
-                                    url: "/report/" + $scope.id + "/taobao",
-                                    headers:{
-                                        appCode: $scope.appCode,
-                                        terminal: "WEB"
-                                    },
-                                    data: $scope.taobao
-                                }).then(function (result) {
-                                    if (result.data.status === "success") {
-                                        clearInterval($scope.timer);
-                                        $state.go("search_detail", {id: $scope.id});
-                                    } else {
-                                        $scope.tip = result.data.message;
-                                        if(result.data.phase_status === 'DONE_TIMEOUT'){
-                                            clearInterval($scope.timer);
-                                            $scope.clickFlag = true;
-                                            $scope.tip = '点击开始查询按钮重新查询';
-                                        }
-                                        //alert(result.data.message);
-                                    }
-//                                    console.log($scope.timer)
-//                                    $scope.$on('$destroy',function(){
-//                                        $interval.cancel($scope.timer);
-//                                    })
-                                });
-//                                $scope.$on('$destroy',function(){
-//                                    if ($scope.timer) {
-//                                        clearInterval($scope.timer);
-//                                        $scope.timer = null;
-//                                    }
-//                                });
+                                clearInterval($scope.timer);
+                                if (result.data.status === "success") {
+                                    $state.go("search_detail", {id: $scope.id});
+                                } else {
+                                    $scope.tip = result.data.message;
+                                }
+                            }else if(result.data.phase_status === 'DONE_TIMEOUT'){
+                                $scope.tip = result.data.message;
+                                clearInterval($scope.timer);
+                                $scope.clickFlag = true;
+                                $scope.tip = '点击开始查询按钮重新查询';
+                                //alert(result.data.message);
                             }
                         })
                     }, 1000)

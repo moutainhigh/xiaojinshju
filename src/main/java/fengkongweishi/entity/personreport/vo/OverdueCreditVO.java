@@ -52,12 +52,28 @@ public class OverdueCreditVO implements IAnalyseItem {
 
     private static boolean filterOverdueCredit(Object o) {
         JSONObject blackRiskItem = (JSONObject) o;
-        return "D".equals(blackRiskItem.get("blackRiskType"));
+        return "B".equals(blackRiskItem.get("blackRiskType"));
     }
 
     private static BlackRiskItem map2BlackRiskItem(Object o) {
         JSONObject blackRiskItem = (JSONObject) o;
-        return new BlackRiskItem(blackRiskItem.getString("blackFactsType"), blackRiskItem.getString("blackFacts"));
+        return new BlackRiskItem(convertBlackFactsTypeB(blackRiskItem.getString("blackFactsType")), blackRiskItem.getString("blackFacts"));
+    }
+
+    private static String convertBlackFactsTypeB(String blackFactsType) {
+        // B01：失联 B02：贷款不良（逾期90天以上未还） B03：短时逾期 B04：逾期
+        switch (blackFactsType) {
+            case "B01":
+                return "失联";
+            case "B02":
+                return "贷款不良";
+            case "B03":
+                return "短时逾期";
+            case "B04":
+                return "逾期";
+            default:
+                return "";
+        }
     }
 
     public List<BlackRiskItem> getOverdueCredits() {

@@ -11,7 +11,7 @@ public enum ExceptionEnum {
     HAVE_NOT_COMPANY(1002, "当前用户未绑定企业"),
     LOGIN_USERNAME_PASSWORD_EMPTY(1003, "手机号或密码不能为空"),
     LOGIN_USERNAME_PASSWORD_WRONG(1004, "手机号或密码错误"),
-    SMS_ERROR(5188,"短信验证码错误，请重新输入验证码"),
+    SMS_ERROR(5188, "短信验证码错误，请重新输入验证码"),
 
     AUTHORIZATION_APPCODE_EMPTY(1010, "appCode不能为空"),
     AUTHORIZATION_TERMINAL_EMPTY(1011, "terminal不能为空"),
@@ -43,8 +43,10 @@ public enum ExceptionEnum {
     MANAGER_CANNOT_DELETE_HIMSELF(1403, "管理员不能将自己从团队中剔除"),
     NOT_HAVE_POWER(1404, "当前用户不具备该权限"),
     USER_NOT_EXIST(1405, "该用户不存在"),
-    ADMIN_CANNOT_JOININ_COMPANY(1406,"该用户已经属于其他公司，不能添加"),
-    NEW_COMPANY_MANAGER_ERROR(1407,"该用户不能成为新团队的负责人，请选择其他用户"),
+    ADMIN_CANNOT_JOININ_COMPANY(1406, "该用户为其他公司超级管理员，不能添加"),
+    NEW_COMPANY_MANAGER_ERROR(1407, "该用户不能成为新团队的负责人，请选择其他用户"),
+    NEW_TEAM_TEAM_ERROR(1408, "团队不能再创建团队"),
+    MANAGER_CANNOT_JOININ_COMPANY(1409, "该用户为其他公司超级管理员，不能添加"),
 
     REPORT_COMPANY_HAVE_NOT_ENOUGH_REMAINDER(1501, "公司账户余额不足"),
     REPORT_COMPANY_HAVE_NOT_OPEN_EDTION(1502, "尚未开通该版本"),

@@ -64,31 +64,65 @@ public class CarrierPO extends BaseAnalyseItem {
     /**
      * 催收类号码
      */
+
     private String contactCollection;
+    /**
+     * 催收类号码证据
+     */
+    @Column(columnDefinition = "text")
+    private String contactCollectionEvidences;
     /**
      * 贷款类号码
      */
     private String contactLoan;
     /**
+     * 贷款类号码证据
+     */
+    @Column(columnDefinition = "text")
+    private String contactLoanEvidences;
+    /**
      * 信用卡类
      */
     private String contactCreditCard;
+    /**
+     * 信用卡类证据
+     */
+    @Column(columnDefinition = "text")
+    private String contactCreditCardEvidences;
     /**
      * 银行类
      */
     private String contactBank;
     /**
+     * 银行类证据
+     */
+    @Column(columnDefinition = "text")
+    private String contactBankEvidences;
+    /**
      * 通话概况
      */
     private String phoneCall;
+    /**
+     * 通话概况证据
+     */
+    @Column(columnDefinition = "text")
+    private String phoneCallEvidences;
     /**
      * 互通过的电话号码
      */
     private String contactEachOther;
     /**
+     * 互通过的电话号码证据
+     */
+    private String contactEachOtherEvidence;
+    /**
      * 朋友圈
      */
     private String regularCircle;
+    /**
+     * 朋友圈证据
+     */
+    private String regularCircleEvidence;
     /**
      * 直接联系人中黑名单人数
      */
@@ -101,6 +135,11 @@ public class CarrierPO extends BaseAnalyseItem {
      * 关机情况
      */
     private String phoneSilent;
+    /**
+     * 关机情况证据
+     */
+    @Column(columnDefinition = "text")
+    private String phoneSilentEvidence;
     /**
      * 联系人分析
      */
@@ -301,5 +340,69 @@ public class CarrierPO extends BaseAnalyseItem {
 
     public void setCallList(JSONArray callList) {
         this.callList = callList.toJSONString();
+    }
+
+    public JSONArray getContactCollectionEvidences() {
+        return JSON.parseArray(contactCollectionEvidences);
+    }
+
+    public void setContactCollectionEvidences(JSONArray contactCollectionEvidences) {
+        this.contactCollectionEvidences = contactCollectionEvidences.toJSONString();
+    }
+
+    public JSONArray getContactLoanEvidences() {
+        return JSON.parseArray(contactLoanEvidences);
+    }
+
+    public void setContactLoanEvidences(JSONArray contactLoanEvidences) {
+        this.contactLoanEvidences = contactLoanEvidences.toJSONString();
+    }
+
+    public JSONArray getContactCreditCardEvidences() {
+        return JSON.parseArray(contactCreditCardEvidences);
+    }
+
+    public void setContactCreditCardEvidences(JSONArray contactCreditCardEvidences) {
+        this.contactCreditCardEvidences = contactCreditCardEvidences.toJSONString();
+    }
+
+    public JSONArray getContactBankEvidences() {
+        return JSON.parseArray(contactBankEvidences);
+    }
+
+    public void setContactBankEvidences(JSONArray contactBankEvidences) {
+        this.contactBankEvidences = contactBankEvidences.toJSONString();
+    }
+
+    public JSONArray getPhoneCallEvidences() {
+        return JSON.parseArray(phoneCallEvidences);
+    }
+
+    public void setPhoneCallEvidences(JSONArray phoneCallEvidences) {
+        this.phoneCallEvidences = phoneCallEvidences.toJSONString();
+    }
+
+    public String getContactEachOtherEvidence() {
+        return contactEachOtherEvidence;
+    }
+
+    public void setContactEachOtherEvidence(String contactEachOtherEvidence) {
+        this.contactEachOtherEvidence = contactEachOtherEvidence;
+    }
+
+    public String getRegularCircleEvidence() {
+        return regularCircleEvidence;
+    }
+
+    public void setRegularCircleEvidence(String regularCircleEvidence) {
+        this.regularCircleEvidence = regularCircleEvidence;
+    }
+
+    public String getPhoneSilentEvidence() {
+        return phoneSilentEvidence;
+    }
+
+    public void setPhoneSilentEvidence(String phoneSilentEvidence) {
+        this.phoneSilentEvidence = phoneSilentEvidence;
     }
 }

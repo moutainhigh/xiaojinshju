@@ -1,7 +1,9 @@
 package fengkongweishi.entity.personreport.vo;
 
+import fengkongweishi.entity.personreport.po.BankPO;
 import fengkongweishi.entity.personreport.po.IAnalyseItem;
 import fengkongweishi.entity.personreport.po.IdCardPO;
+import fengkongweishi.entity.personreport.po.PhonePO;
 import fengkongweishi.enums.Color;
 
 /**
@@ -62,7 +64,7 @@ public class IdCardVO implements IAnalyseItem {
 
     private Color color;
 
-    public IdCardVO(IdCardPO idCardPO) {
+    public IdCardVO(IdCardPO idCardPO, BankPO bankPO, PhonePO phonePO) {
         if (idCardPO != null) {
             this.color = idCardPO.getColor();
             this.name = idCardPO.getName();
@@ -72,10 +74,10 @@ public class IdCardVO implements IAnalyseItem {
             this.city = idCardPO.getCity();
             this.town = idCardPO.getTown();
             this.idCard = idCardPO.getIdCard();
-            this.mobileCompany = idCardPO.getAddress();
-            this.mobile = idCardPO.getAddress();
-            this.bankCard = idCardPO.getIdCard();
-            this.bankName = idCardPO.getName();
+            this.mobileCompany = phonePO.getMobileCompany();
+            this.mobile = phonePO.getMobile();
+            this.bankCard = bankPO.getBankCard();
+            this.bankName = bankPO.getBankName();
             this.address = idCardPO.getAddress();
         }
     }

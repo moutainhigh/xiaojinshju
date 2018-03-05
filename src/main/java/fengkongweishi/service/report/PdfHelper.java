@@ -15,10 +15,14 @@ import java.util.Locale;
  * @Date 2018/2/8 上午10:48
  **/
 public class PdfHelper {
+//    private static String simsum = "http://xiaojincom.oss-cn-hangzhou.aliyuncs.com/simsun.ttc";
+//    private static String simhei = "http://xiaojincom.oss-cn-hangzhou.aliyuncs.com/simhei.ttf";
+
     public ITextRenderer getRender() throws IOException, com.lowagie.text.DocumentException {
         ITextRenderer render = new ITextRenderer();
-        String fontPath = getPath();
-        render.getFontResolver().addFont(fontPath, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+        String path=getPath();
+        render.getFontResolver().addFont(path, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+//        render.getFontResolver().addFont(simhei, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
         return render;
     }
 
@@ -60,6 +64,10 @@ public class PdfHelper {
      */
     public String getPath() {
         return this.getClass().getResource("/").getPath() + "templates/simsun.ttc";
+    }
+
+    public String getPathWithHei() {
+        return this.getClass().getResource("/").getPath() + "templates/simhei.ttf";
     }
 }
 

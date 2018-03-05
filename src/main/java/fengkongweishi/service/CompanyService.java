@@ -14,6 +14,7 @@ import fengkongweishi.entity.companyverification.CompanyVerificationRepository;
 import fengkongweishi.entity.customer.CustomerRepository;
 import fengkongweishi.entity.personreport.PersonReport;
 import fengkongweishi.entity.role.Role;
+import fengkongweishi.entity.role.RoleRepository;
 import fengkongweishi.entity.user.User;
 import fengkongweishi.entity.user.UserRepository;
 import fengkongweishi.enums.*;
@@ -72,6 +73,8 @@ public class CompanyService {
     CompanyVerificationRepository companyVerificationRepository;
     @Autowired
     ParameterService parameterService;
+    @Autowired
+    RoleRepository roleRepository;
 
     @Transactional(rollbackOn = Exception.class)
     public void directDeposit(Company company, Integer amount, PaymentChannelEnum channel, String reason) {
@@ -181,7 +184,7 @@ public class CompanyService {
         throw new FailResponse(6511, "生成支付宝支付页错误");
     }
 
-    public Page<Company> teamListAndSearch(TeamForSearch searchBean, Pageable pageable,Company company) {
+    public Page<Company> teamListAndSearch(TeamForSearch searchBean, Pageable pageable, Company company) {
         Page<Company> companyPage = companyRepository.findAll(new Specification<Company>() {
             @Override
             public Predicate toPredicate(Root<Company> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
@@ -212,10 +215,10 @@ public class CompanyService {
     }
 
     public void addTeam(Company company, User manager, String companyName) {
-        Company team = companyRepository.findByCompanyNameAndParent(companyName,company);
-        if(team != null){
+        Company team = companyRepository.findByCompanyNameAndParent(companyName, company);
+        if (team != null) {
             throw new FailResponse(ExceptionEnum.TEAM_ALREADY_EXIST);
-        }else{
+        } else {
             team = new Company();
         }
         Date date = new Date();
@@ -227,22 +230,20 @@ public class CompanyService {
         team.setVerifyTime(date);
         Set<SystemEditionEnum> openEditions = new HashSet<>();
         Set<SystemEditionEnum> parentEditions = company.getOpenEditions();
-        for (SystemEditionEnum systemEditionEnum:parentEditions){
+        for (SystemEditionEnum systemEditionEnum : parentEditions) {
             openEditions.add(systemEditionEnum);
         }
         team.setOpenEditions(openEditions);
         team.setAppCode(parameterService.getMD5(new Date().toString().getBytes(Charset.forName("utf-8"))));
         companyRepository.save(team);
-        Role role = new Role();
-        role.setId(2);
-        role.setName("ROLE_MANAGER");
+        Role role = roleRepository.findByName(Role.defaultRole.MANAGER.getName());
         manager.setCompany(team);
         manager.setJoinCompanyTime(date);
         manager.setRole(role);
         userRepository.save(manager);
     }
 
-    public void editionupgreade(Company company, User user,String edition) {
+    public void editionupgreade(Company company, User user, String edition) {
         CompanyVerification companyVerification = new CompanyVerification();
         companyVerification.setCompany(company);
         companyVerification.setApplyUser(user);

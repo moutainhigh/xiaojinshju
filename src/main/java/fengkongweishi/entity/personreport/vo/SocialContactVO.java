@@ -23,9 +23,17 @@ public class SocialContactVO implements IAnalyseItem {
      */
     private String contactEachOther;
     /**
+     * 互通过的电话号码证据
+     */
+    private String contactEachOtherEvidence;
+    /**
      * 朋友圈
      */
     private String regularCircle;
+    /**
+     * 朋友圈证据
+     */
+    private String regularCircleEvidence;
     /**
      * 直接联系人中黑名单人数
      */
@@ -38,6 +46,10 @@ public class SocialContactVO implements IAnalyseItem {
      * 关机情况
      */
     private String phoneSilent;
+    /**
+     * 关机情况证据
+     */
+    private String phoneSilentEvidence;
 
     private Color color;
 
@@ -46,10 +58,14 @@ public class SocialContactVO implements IAnalyseItem {
         return "SocialContactVO{" +
                 "linkmanChecks=" + linkmanChecks +
                 ", contactEachOther='" + contactEachOther + '\'' +
+                ", contactEachOtherEvidence='" + contactEachOtherEvidence + '\'' +
                 ", regularCircle='" + regularCircle + '\'' +
+                ", regularCircleEvidence='" + regularCircleEvidence + '\'' +
                 ", contactsClass1BlacklistCnt=" + contactsClass1BlacklistCnt +
                 ", contactsClass2BlacklistCnt=" + contactsClass2BlacklistCnt +
                 ", phoneSilent='" + phoneSilent + '\'' +
+                ", phoneSilentEvidence='" + phoneSilentEvidence + '\'' +
+                ", color=" + color +
                 '}';
     }
 
@@ -57,10 +73,13 @@ public class SocialContactVO implements IAnalyseItem {
         if (carrierPO != null) {
             this.color = carrierPO.getColor();
             this.contactEachOther = carrierPO.getContactEachOther();
+            this.contactEachOtherEvidence = carrierPO.getContactEachOtherEvidence();
             this.regularCircle = carrierPO.getRegularCircle();
+            this.regularCircleEvidence = carrierPO.getRegularCircleEvidence();
             this.contactsClass1BlacklistCnt = carrierPO.getContactsClass1BlacklistCnt();
             this.contactsClass2BlacklistCnt = carrierPO.getContactsClass2BlacklistCnt();
             this.phoneSilent = carrierPO.getPhoneSilent();
+            this.phoneSilentEvidence = carrierPO.getPhoneSilentEvidence();
             if (carrierPO.getLinkmanChecks() != null) {
                 this.linkmanChecks = carrierPO.getLinkmanChecks().stream().collect(Collectors.toList());
             } else {
@@ -91,6 +110,18 @@ public class SocialContactVO implements IAnalyseItem {
 
     public String getPhoneSilent() {
         return phoneSilent;
+    }
+
+    public String getContactEachOtherEvidence() {
+        return contactEachOtherEvidence;
+    }
+
+    public String getRegularCircleEvidence() {
+        return regularCircleEvidence;
+    }
+
+    public String getPhoneSilentEvidence() {
+        return phoneSilentEvidence;
     }
 
     @Override

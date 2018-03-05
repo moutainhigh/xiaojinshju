@@ -1,5 +1,7 @@
 package fengkongweishi.entity.customer;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -12,6 +14,11 @@ public class CustomerForSearch {
     private String detail;
     private Date beginTime;
     private Date endTime;
+    /**
+     * 选择的时间
+     * eg.2018-01-30 - 2018-03-13
+     */
+    private String dateSelect;
 
     public Integer getCreateBy() {
         return createBy;
@@ -37,19 +44,31 @@ public class CustomerForSearch {
         this.detail = detail;
     }
 
+    public String getDateSelect() {
+        return dateSelect;
+    }
+
+    public void setDateSelect(String dateSelect) {
+        this.dateSelect = dateSelect;
+        if (this.dateSelect != null) {
+            String[] dates = this.dateSelect.split(" - ");
+            if (dates.length == 2) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                try {
+                    this.beginTime = sdf.parse(dates[0]);
+                    this.endTime = sdf.parse(dates[1]);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public Date getBeginTime() {
         return beginTime;
     }
 
-    public void setBeginTime(Date beginTime) {
-        this.beginTime = beginTime;
-    }
-
     public Date getEndTime() {
         return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
     }
 }

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-ng-app="app">
+    <head>
+        <meta charset="utf-8" />
+        <title>风控卫士</title>
+        <meta name="description" content="Angularjs, Html5, Music, Landing, 4 in 1 ui kits package" />
+        <meta name="keywords" content="AngularJS, angular, bootstrap, admin, dashboard, panel, app, charts, components,flat, responsive, layout, kit, ui, route, web, app, widgets" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link href="https://cdn.bootcss.com/animate.css/3.5.2/animate.min.css" rel="stylesheet">
+        <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="https://cdn.bootcss.com/simple-line-icons/2.4.1/css/simple-line-icons.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.4/css/bootstrap.min.css" type="text/css" />
+        <link rel="stylesheet" href="../libs/layui/css/layui.css" type="text/css" />
+
+        <!-- build:css css/app.min.css -->
+        <link rel="stylesheet" href="/fengkongweishi/css/font.css" type="text/css" />
+        <link rel="stylesheet" href="/fengkongweishi/css/app.css" type="text/css" />
+        <link rel="stylesheet" href="/fengkongweishi/css/style.css" type="text/css" />
+        <link rel="stylesheet" href="/fengkongweishi/css/page.css" type="text/css" />
+        <!-- endbuild -->
+    </head>
+    <body ng-controller="AppCtrl">
+    <div class="loading" style="display: none"></div>
+        <div class="all_wrap">
+            <div class="header_wrap" style="-webkit-app-region: drag">
+                <div class="menu_wrap pull-left" on-finish-render="ngRepeatFinished">
+                    <ul class="menu_ul">
+                        <li  ui-sref-active="active">
+                            <a ng-click="menuClick('welcome')">
+                                <img src="/fengkongweishi/images/icon_index.png" alt="person" width="45" />
+                                <br />
+                                首页
+                            </a>
+                        </li>
+                         <li>
+                            <a ng-click="menuClick('newSearch')">
+                                    <img src="/fengkongweishi/images/icon_new.png" alt="person" width="45" />
+                                <br />
+                                新建查询
+                            </a>
+                        </li>
+                        <li>
+                            <!--<a ui-sref="personloan_list">-->
+                            <a ng-click="menuClick('searchList')">
+                                    <img src="/fengkongweishi/images/icon_search.png" alt="person" width="45" />
+                                <br />
+                                查询名单
+                            </a>
+                        </li>
+                       
+                        <li>
+                            <a ng-click="menuClick('developing')">
+                                    <img src="/fengkongweishi/images/icon_jiankong.png" alt="person" width="45" />
+                                <br />
+                                数据监控
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="menuClick('employee_list')">
+                                    <img src="/fengkongweishi/images/icon_guanli.png" alt="person" width="45" />
+                                <br />
+                                企业管理
+                            </a>
+                        </li>
+                        <li ng-show="myinfo.role.name === 'ROLE_ADMIN'">
+                            <a ng-click="menuClick('management')" style="color: {{color[5]}}">
+                                <img src="/fengkongweishi/images/icon_center.png" alt="person" width="45" />
+                                <br />
+                                管理中心
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="pull-right text-right" style="padding-top:72px;">
+                    <span ng-bind="myinfo.company.companyName"></span>&nbsp;&nbsp;&nbsp;<span ng-bind="myinfo.nickname"></span>&nbsp;&nbsp;&nbsp;<a ui-sref="employee_list" ng-if="myinfo.role.name == 'ROLE_MANAGER'">费用&充值</a>&nbsp;&nbsp;&nbsp;<a href="/logout">退出</a>&nbsp;&nbsp;
+                </div>
+            </div>  
+
+            <div class="app" id="app" ui-view=""></div>
+        </div>
+
+        <!-- build:js js/app.angular.js -->
+        <!-- jQuery -->
+        <script src="https://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+        <script>if (typeof module === 'object') {
+            window.jQuery = window.$ = module.exports;
+        }
+        ;</script>
+        <!-- Bootstrap -->
+        <!-- Bootstrap -->
+        <script src="https://cdn.bootcss.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+        <!-- Angular -->
+        <script src="https://cdn.bootcss.com/angular.js/1.5.8/angular.min.js"></script>
+
+        <script src="https://cdn.bootcss.com/angular.js/1.5.8/angular-animate.min.js"></script>
+        <script src="https://cdn.bootcss.com/angular.js/1.5.8/angular-aria.min.js"></script>
+        <script src="https://cdn.bootcss.com/angular.js/1.5.8/angular-cookies.min.js"></script>
+        <script src="https://cdn.bootcss.com/angular.js/1.5.8/angular-resource.min.js"></script>
+        <script src="../libs/angular/angular-messages/angular-messages.js"></script>
+        <script src="https://cdn.bootcss.com/angular.js/1.5.8/angular-sanitize.min.js"></script>
+        <script src="../libs/angular/angular-touch/angular-touch.js"></script>
+
+        <script src="https://cdn.bootcss.com/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
+        <script src="libs/angular/ngstorage/ngStorage.min.js"></script>
+        <script src="libs/angular/angular-ui-utils/ui-utils.min.js"></script>
+
+        <!-- bootstrap -->
+        <script src="https://cdn.bootcss.com/angular-ui-bootstrap/0.12.1/ui-bootstrap-tpls.min.js"></script>
+        <!-- lazyload -->
+        <script src="https://cdn.bootcss.com/oclazyload/0.5.2/ocLazyLoad.min.js"></script>
+        <!-- translate -->
+        <script src="https://cdn.bootcss.com/angular-translate/2.5.2/angular-translate.min.js"></script>
+        <script src="https://cdn.bootcss.com/angular-translate/2.15.2/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
+        <script src="https://cdn.bootcss.com/angular-translate/2.15.2/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js"></script>
+        <script src="https://cdn.bootcss.com/angular-translate/2.15.2/angular-translate-storage-local/angular-translate-storage-local.min.js"></script>
+
+        <script src="../libs/jQueryDistpicker/distpicker.data.js"></script>
+        <script src="../libs/jQueryDistpicker/distpicker.js"></script>
+        <script type="text/javascript" src="../libs/html2canvas/dist/html2canvas.js"></script>
+        <script type="text/javascript" src="../libs/jquery/jquery.PrintArea/demo/jquery.PrintArea.js"></script>
+        <script type="text/javascript" src="../libs/jquery/moment/moment.js"></script>
+        <script type="text/javascript" src="../libs/layui/layui.js"></script>
+
+        <!-- App -->
+        <script src="/fengkongweishi/js/app.js"></script>
+        <script src="/fengkongweishi/js/config.js"></script>
+        <script src="/fengkongweishi/js/config.lazyload.js"></script>
+        <script src="/fengkongweishi/js/config.router.js"></script>
+        <script src="/fengkongweishi/js/main.js"></script>
+        <script src="/fengkongweishi/js/services/ui-load.js"></script>
+        <script src="/fengkongweishi/js/filters/fromNow.js"></script>
+        <script src="/fengkongweishi/js/directives/setnganimate.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-butterbar.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-focus.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-fullscreen.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-jq.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-module.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-nav.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-scroll.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-shift.js"></script>
+        <script src="/fengkongweishi/js/directives/ui-toggleclass.js"></script>
+        <script src="/fengkongweishi/js/controllers/bootstrap.js"></script>
+        <!-- endbuild -->
+        <!-- Lazy loading -->
+    </body>
+</html>

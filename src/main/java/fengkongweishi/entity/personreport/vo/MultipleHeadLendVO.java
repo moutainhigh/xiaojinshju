@@ -57,7 +57,25 @@ public class MultipleHeadLendVO implements IAnalyseItem {
 
     private static BlackRiskItem map2BlackRiskItem(Object o) {
         JSONObject blackRiskItem = (JSONObject) o;
-        return new BlackRiskItem(blackRiskItem.getString("blackFactsType"), blackRiskItem.getString("blackFacts"));
+        return new BlackRiskItem(convertBlackFactsTypeE(blackRiskItem.getString("blackFactsType")), blackRiskItem.getString("blackFacts"));
+    }
+
+    private static String convertBlackFactsTypeE(String blackFactsType) {
+        // E01：7天内多头借贷 E02：1月内多头借贷 E03：3月内多头借贷 E04：疑似多头借
+        switch (blackFactsType) {
+            case "E01":
+                return "7天内多头借贷";
+            case "E02":
+                return "1月内多头借贷";
+            case "E03":
+                return "3月内多头借贷";
+            case "E04":
+                return "疑似多头借贷";
+            case "":
+                return "放款平台";
+            default:
+                return "";
+        }
     }
 
     public List<BlackRiskItem> getMultipleHeadLends() {

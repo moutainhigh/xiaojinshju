@@ -23,7 +23,12 @@ public class ConsumeOrder {
     @Info(label = "消费金额", tip = "", placeholder = "", help = "", secret = "")
     private String money;
 
-   
+    
+
+    @Override
+    public String toString() {
+        return "ConsumeOrder [datetime=" + datetime + ", event=" + event + ", money=" + money + "]";
+    }
 
     @Override
     public boolean equals(Object o) {

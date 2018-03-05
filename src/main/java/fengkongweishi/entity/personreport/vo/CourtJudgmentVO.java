@@ -18,7 +18,7 @@ public class CourtJudgmentVO implements IAnalyseItem {
     /**
      * 具体法院裁决
      */
-    private List<CourtJudgment> courJudgmentList;
+    private List<CourtJudgmentVOItem> courJudgmentList;
 
     /**
      * 法院裁决风险分析数量
@@ -40,13 +40,7 @@ public class CourtJudgmentVO implements IAnalyseItem {
             this.color = courtJudgmentPO.getColor();
             if (courtJudgmentPO.getCourtJudgments() != null) {
                 this.courJudgmentList = new ArrayList<>();
-                courtJudgmentPO.getCourtJudgments().stream().forEach(item -> this.courJudgmentList.add(new CourtJudgment(
-                        item.getDocId(),
-                        item.getTitle(),
-                        item.getCaseType(),
-                        item.getConcludeTime(),
-                        item.getContent()
-                )));
+                courtJudgmentPO.getCourtJudgments().stream().forEach(item -> this.courJudgmentList.add(new CourtJudgmentVOItem(item)));
                 this.count = courtJudgmentPO.getCourtJudgments().size();
             } else {
                 this.courJudgmentList = Collections.emptyList();
@@ -55,7 +49,7 @@ public class CourtJudgmentVO implements IAnalyseItem {
         }
     }
 
-    public List<CourtJudgment> getCourJudgmentList() {
+    public List<CourtJudgmentVOItem> getCourJudgmentList() {
         return courJudgmentList;
     }
 

@@ -17,38 +17,50 @@
                 level:"",
                 createBy:"",
                 detail:"",
-                beginTime:"",
-                endTime:""
+                dateSelect:""
             };
             $scope.searchFlag=false;
             //时间控件开始
             //控制点击日历图表弹出选择框
-            $scope.open = function ($event) {
-                $event.preventDefault();
-                $event.stopPropagation();
-                $scope.opened = true;
-            };
 
-            //时间控件属性设置 参考http://www.cnblogs.com/pilixiami/p/5611346.html
-            $scope.dateOptions = {
-                formatYear: "yy",
-                startingDay: 1,
-                class: "datepicker"
-            };
+            layui.use('laydate', function() {
+                var laydate = layui.laydate;
 
-            $scope.endOpen = function ($event) {
-                $event.preventDefault();
-                $event.stopPropagation();
-                $scope.endOpened = true;
-            };
-            $scope.endDateOptions = {
-                formatYear: "yy",
-                startingDay: 1,
-                class: "datepicker"
-            };
+                //常规用法
+                laydate.render({
+                    elem: '#dateSelect'
+                    ,range: true
+                });
+            });
+//            $scope.open = function ($event) {
+//                $event.preventDefault();
+//                $event.stopPropagation();
+//                $scope.opened = true;
+//            };
+//
+//            //时间控件属性设置 参考http://www.cnblogs.com/pilixiami/p/5611346.html
+//            $scope.dateOptions = {
+//                formatYear: "yy",
+//                startingDay: 1,
+//                class: "datepicker"
+//            };
+//
+//            $scope.endOpen = function ($event) {
+//                $event.preventDefault();
+//                $event.stopPropagation();
+//                $scope.endOpened = true;
+//            };
+//            $scope.endDateOptions = {
+//                formatYear: "yy",
+//                startingDay: 1,
+//                class: "datepicker"
+//            };
             //时间控件结束
 
             $scope.getList = function(size,page){
+                if($("#dateSelect").val()){
+                    $scope.searchInfo.dateSelect = $("#dateSelect").val();
+                }
                 $http({
                     method:'POST',
                     url:"/customer/searchQuery?size="+size+"&page=" + page,
@@ -65,6 +77,7 @@
                                 ,count: resResult.data.data.totalElements
                                 ,limit: 7
                                 ,limits:[6,7,8]
+                                ,theme: '#4777B6'
                                 ,layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
                                 ,jump: function(obj,first)
                                 {
@@ -81,10 +94,10 @@
             };
             $scope.getList(7,0);
 
-            $http.get("/company/teamMoving/employeesList").success(
+            $http.get("/company/employeesList").success(
                 function (result) {
                     console.log(result);
-                    $scope.memberList = result.data;
+                    $scope.memberList = result.data.employeeList;
                 }
             );
 
@@ -98,8 +111,7 @@
                     level:"",
                     createBy:"",
                     detail:"",
-                    beginTime:"",
-                    endTime:""
+                    dateSelect:""
                 };
                 $scope.searchFlag = false;
                 $scope.getList(7,0);
@@ -114,7 +126,7 @@
     ]);
 </script>
 <div class="body_wrap list_wrap" ng-controller="searchListCtrl">
-    <div class="wrapper-md b-b clearfix" style="padding:15px 20px;">
+    <div class="wrapper-md clearfix" style="padding:50px 45px;">
         <div class="font-thin h4">
             <div>
             <form class="clearfix">
@@ -123,7 +135,7 @@
                             class="form-control"
                             autocomplete="off"
                             ng-model="searchInfo.createBy"
-                            ng-options="member.id as member.detail for member in memberList">
+                            ng-options="member.id as member.nickname for member in memberList">
                         <option selected="selected" value="">操作人</option>
                     </select>
                 </div>
@@ -138,66 +150,36 @@
                         <option value="BAD">差</option>
                     </select>
                 </div>
-                <div class="pull-left m-r inline col-sm-3" style="padding-left: 0px">
+                <div class="pull-left m-r inline col-sm-3" style="padding-left: 0px;margin-right: 0px">
                     <input type="text"
                            class="form-control"
-                           placeholder="姓名/手机号/身份证"
+                           placeholder="姓名/手机号/身份证号"
                            ng-model="searchInfo.detail">
                 </div>
-                <div class="w-sm inline_tab input-group pull-left">
+                <div class="pull-left m-r inline col-sm-3" style="padding-left: 0px;margin-right: 0px">
                     <input type="text"
-                           disabled
-                           style="float: none;"
+                           id="dateSelect"
                            class="form-control"
-                           datepicker-popup="yyyy-MM-dd"
-                           placeholder="开始日期"
-                           ng-model="searchInfo.beginTime"
-                           popup-placement="bottom-right"
-                           is-open="opened"
-                           datepicker-options="dateOptions"
-                           close-text="关闭"
-                           clear-text="清空"
-                           current-text="今天"/>
-                    <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" ng-click="open($event)">
-                                <i class="fa fa-calendar"></i>
-                            </button>
-                        </span>
+                           placeholder="最后查询时间"
+                           ng-model="searchInfo.dateSelect">
                 </div>
-                <div class="w-sm inline_tab input-group pull-left m-l-sm">
-                    <input type="text"
-                           disabled
-                           style="float: none;"
-                           class="form-control"
-                           datepicker-popup="yyyy-MM-dd"
-                           placeholder="结束日期"
-                           ng-model="searchInfo.endTime"
-                           is-open="endOpened"
-                           popup-placement="bottom-right"
-                           datepicker-options="endDateOptions"
-                           close-text="关闭"
-                           clear-text="清空"
-                           current-text="今天"/>
-                    <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" ng-click="endOpen($event)">
-                                <i class="fa fa-calendar"></i>
-                            </button>
-                        </span>
-                </div>
+
                 <div class="pull-left m-r inline" style="margin: 2px 15px">
-                        <button class="layui-btn layui-btn-sm"
-                                ng-click="resetClick()"
-                                >清除</button>
-                        <button class="layui-btn layui-btn-sm"
-                                ng-click="searchList()"
-                                >查询</button>
+                    <button class="layui-btn layui-btn-sm blueBtn"
+                            ng-click="searchList()"
+                    >查询
+                    </button>
+                    <button class="layui-btn layui-btn-sm layui-btn-primary blueBtn_primary"
+                            ng-click="resetClick()"
+                    >清除
+                    </button>
                 </div>
                 <!--<div class="pull-right m-r inline">-->
                     <!--<button class="resetBtn" ng-click="resetClick()"></button>-->
                 <!--</div>-->
             </form>
 
-                            <table class="layui-table" lay-even="" lay-skin="nob" style="margin-top: 30px">
+                            <table class="layui-table" style="margin: 30px 0">
                                 <colgroup>
                                     <col width="150">
                                     <col width="150">
@@ -218,7 +200,7 @@
                                 </thead>
                                 <tbody>
                                     <tr ng-repeat="item in list">
-                                        <td><a ng-click="goDetail(item.reportId)" class="btn btn-default btn-xs">{{item.name}}</a></td>
+                                        <td><a ng-click="goDetail(item.reportId)" style="color: #4777B6">{{item.name}}</a></td>
                                         <td>{{item.mobile}}</td>
                                         <td>{{item.idCard}}</td>
                                         <td>{{item.lastQueryTime}}</td>
@@ -229,7 +211,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <div id="demo7" style="text-align: center"></div>
+                            <div id="demo7" class="pageBar"></div>
                         </div>
                     </div>
                 </div>
@@ -319,4 +301,10 @@
             </div>
         </div>
     </div>
+<div class="footer_wrap">
+    <div class="pull-right">
+        杭州商道科技有限公司 &nbsp;
+        0571-56932575
+    </div>
+</div>
 </div>

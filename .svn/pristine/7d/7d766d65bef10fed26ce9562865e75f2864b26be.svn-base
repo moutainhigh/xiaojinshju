@@ -1,0 +1,256 @@
+<script>
+
+    "use strict";
+    app.controller("carSearchCtrl", [
+        "$scope", "$http", "$rootScope", '$state', '$interval', '$timeout', "$stateParams","$filter",
+        function ($scope, $http, $rootScope, $state, $interval, $timeout, $stateParams,$filter) {
+            $scope.edition = $stateParams.edition ? $stateParams.edition : sessionStorage.getItem('edition');
+            $scope.id = $stateParams.reportId;
+            $scope.username = $stateParams.username;
+            $scope.phone = $stateParams.phone;
+            $scope.idCard = $stateParams.idCard;
+            $scope.appCode = $stateParams.appCode;
+            $scope.endStep = false;
+            $scope.loading = false;
+            $scope.clickFlag = true;
+            if($scope.edition === "PERSONJUNIOR"){
+                $scope.endStep = true;
+            }
+
+            $scope.car = {
+                carType:"",
+                plateNumber:"",
+                engineNo:"",
+                vin:""
+            };
+
+            //判断是否是重新查询
+            if($stateParams.searFlag) {
+                $scope.car = {
+                    carType: JSON.parse(sessionStorage.getItem('carInfo')).carType,
+                    plateNumber: JSON.parse(sessionStorage.getItem('carInfo')).plateNumber,
+                    engineNo: JSON.parse(sessionStorage.getItem('carInfo')).engineNo,
+                    vin: JSON.parse(sessionStorage.getItem('carInfo')).vin
+                };
+            }
+            $scope.next = function () {
+                for (var key in $scope.car) {
+                    if ($scope.car[key] === "") {
+                        console.log($scope.car[key]);
+                        $rootScope.infoBox("请完善所填信息");
+                        return 0;
+                    }
+                }
+//                $scope.storeData();
+                if( $scope.clickFlag){
+                    $scope.clickFlag = false;
+                    $http({
+                        method: "POST",
+                        url: "/report/" + $scope.id + "/violation",
+                        headers:{
+                            appCode: $scope.appCode,
+                            terminal: "WEB"
+                        },
+                        data: $scope.car
+                    }).then(function (result) {
+                        if (result.data.status === "success") {
+                            if ($scope.edition === "PERSONMOBILE" || $scope.edition === "PERSONSENIOR") {
+                                $state.go('carrier', {
+                                    reportId: $scope.id,
+                                    edition: $scope.edition,
+                                    username: $scope.username,
+                                    phone: $scope.phone,
+                                    idCard: $scope.idCard,
+                                    appCode: $scope.appCode,
+                                    searFlag:$stateParams.searFlag
+                                });
+                            } else if ($scope.edition === "PERSONECOMMERCE") {
+                                $state.go('taobao', {
+                                    reportId: $scope.id,
+                                    edition: $scope.edition,
+                                    username: $scope.username,
+                                    phone: $scope.phone,
+                                    idCard: $scope.idCard,
+                                    appCode: $scope.appCode,
+                                    searFlag:$stateParams.searFlag
+                                });
+                            }
+                        } else {
+                            $rootScope.infoBox("查询失败");
+                        }
+                    })
+                }
+            };
+
+            $scope.passStep = function () {
+                if ($scope.edition === "PERSONMOBILE" || $scope.edition === "PERSONSENIOR") {
+                    $state.go('carrier', {
+                        reportId: $scope.id,
+                        edition: $scope.edition,
+                        username: $scope.username,
+                        phone: $scope.phone,
+                        idCard: $scope.idCard,
+                        appCode: $scope.appCode,
+                        searFlag:$stateParams.searFlag
+                    });
+                } else if ($scope.edition === "PERSONECOMMERCE") {
+                    $state.go('taobao', {
+                        reportId: $scope.id,
+                        edition: $scope.edition,
+                        username: $scope.username,
+                        phone: $scope.phone,
+                        idCard: $scope.idCard,
+                        appCode: $scope.appCode,
+                        searFlag:$stateParams.searFlag
+                    });
+                }
+            };
+
+            $scope.start = function () {
+                for (var key in $scope.car) {
+                    if ($scope.car[key] === "") {
+                        console.log($scope.car[key]);
+                        $rootScope.infoBox("请完善所填信息");
+                        return 0;
+                    }
+                }
+//                $scope.storeData();
+                if( $scope.clickFlag) {
+                    $scope.clickFlag = false;
+                    $http({
+                        method: "POST",
+                        url: "/report/" + $scope.id + "/violation",
+                        headers: {
+                            appCode: $scope.appCode,
+                            terminal: "WEB"
+                        },
+                        data: $scope.car
+                    }).then(function (result) {
+                        console.log(result);
+                        if (result.data.status === "success") {
+                            $state.go("search_detail", {id: $scope.id});
+                        } else {
+                            $rootScope.infoBox("查询失败");
+                        }
+                    })
+                }
+            };
+
+            $scope.passStart = function () {
+                $state.go("search_detail",{id:$scope.id});
+            };
+            //车辆违章查询
+            $scope.carOKClick = function () {
+                $http({
+                    method: "POST",
+                    url: "/report/{reportId}/violation",
+                    data: $scope.car
+                }).then(function (result) {
+                    console.log(result);
+                })
+            };
+            $scope.chooseClick = function () {
+                $timeout(function () {
+                    $("#chooseLicense").click();
+                },0,false)
+
+            };
+            var input = document.getElementById("chooseLicense");
+            input.addEventListener('change',readFile,false);
+            function readFile() {
+                $scope.loading = true;
+                var fd = new FormData();
+                var file = this.files[0];
+                fd.append("file", file);
+                $http({
+                    method: "POST",
+                    url: "/image/distinguish",
+                    headers: {
+                        "Content-Type": undefined
+                    },
+                    timeout: 0,
+                    transformRequest: angular.identity,
+                    data:fd
+                }).then(function (result) {
+                    console.log(result);
+                    if(result.data.status === "success"){
+                        $scope.loading = false;
+                        $scope.car.plateNumber = result.data.data.plateNumber;
+                        $scope.car.engineNo = result.data.data.engineNo;
+                        $scope.car.vin = result.data.data.vin;
+                    }else {
+                        $scope.loading = false;
+                        $rootScope.infoBox("车辆识别失败");
+                    }
+                })
+            }
+//            $scope.storeData = function () {
+//                sessionStorage.setItem('carType',$scope.car.carType);
+//                sessionStorage.setItem('plateNumber',$scope.car.name);
+//                sessionStorage.setItem('engineNo',$scope.car.engineNo);
+//                sessionStorage.setItem('idCard',$scope.car.vin);
+//            }
+
+        }]);</script>
+<div class="body_wrap list_page" ng-controller="carSearchCtrl">
+    <div class="warp_content" style="height:518px;">
+        <div class="hbox hbox-auto-xs bg-white">
+            <div class="col" style="width:65%">
+                <div class="auth_title_warp" ng-model="editionInfo" style="width: 160px">
+                    <img src="/fengkongweishi/images/Authentication.png" height="30" width="26"/>
+                    <div class="auth_title">车辆违章查询</div>
+                </div>
+                <div class="vbox">
+                    <div class="row-row">
+                        <div class="cell">
+                            <div class="cell-inner" style="overflow: visible">
+                                <form class="form-horizontal ng-pristine ng-valid ng-valid-date ng-valid-required ng-valid-date-disabled">
+                                    <div class="input-group">
+                                        <label class=" control-label">车辆类型</label>
+                                        <select name="carType" ng-model="car.carType">
+                                            <option value="" selected>请选择车辆类型</option>
+                                            <option value="01">大型车</option>
+                                            <option value="02">小型车</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="control-label">车牌号</label>
+                                        <input type="text" ng-model="car.plateNumber" placeholder="请输入车牌号"/>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label class=" control-label">发动机号</label>
+                                        <input type="text" ng-model="car.engineNo" placeholder="请输入发动机号"/>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label class=" control-label">车架号</label>
+                                        <input type="text" ng-model="car.vin" placeholder="请输入车架号"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <div style="text-align: center;margin-left: 80px">
+                                            <span ng-show="!loading">不想手工录入信息？试试<a class="underLine" ng-click="chooseClick()">车辆识别</a>吧~</span>
+                                            <a ng-show="loading">正在识别<span class="dotting"></span></a>
+                                        </div>
+                                        <input type="file" id="chooseLicense" style="display: none"/>
+                                    </div>
+
+                                    <div class="input-btn-group" style="margin-top: 30px">
+                                        <label class="control-label"></label>
+                                        <button class="layui-btn" ng-click="next()" ng-if="!endStep">下一步</button>
+                                        <button class="layui-btn layui-btn-normal" ng-click="start()" ng-if="endStep">开始查询</button>
+                                        <div>
+                                            <p ng-click="passStart()" ng-if="endStep">跳过并查询></p>
+                                            <p ng-click="passStep()" ng-if="!endStep">跳过></p>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

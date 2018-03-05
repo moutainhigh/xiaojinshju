@@ -9,6 +9,7 @@ import fengkongweishi.entity.companyverification.CompanyVerification;
 import fengkongweishi.entity.companyverification.CompanyVerificationRepository;
 import fengkongweishi.entity.companyverification.CompanyVerificationVO;
 import fengkongweishi.entity.role.Role;
+import fengkongweishi.entity.role.RoleRepository;
 import fengkongweishi.entity.user.User;
 import fengkongweishi.entity.user.UserRepository;
 import fengkongweishi.enums.*;
@@ -29,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.nio.charset.Charset;
@@ -55,52 +57,63 @@ public class AdminController {
     ParameterService parameterService;
 
     @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
     private CompanyRemainderLogRepository companyRemainderLogRepository;
 
-    @RequestMapping(value = "/companyVerify/{id}",method = RequestMethod.POST)
+    @RequestMapping(value = "/companyVerify/{id}", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseBody companyVerify(@PathVariable Integer id, @Valid VerifyResult verifyResult, BindingResult result){
-        if(result.hasErrors()){
+    @Transactional(rollbackOn = Exception.class)
+    public ResponseBody companyVerify(@PathVariable Integer id, @Valid VerifyResult verifyResult, BindingResult result) {
+        if (result.hasErrors()) {
             return ValidUtils.getFirstErrorInfo(result);
         }
-        if(!verifyResult.result && StringUtils.isEmpty(verifyResult.getReason())){
+        if (!verifyResult.getResult() && StringUtils.isEmpty(verifyResult.getReason())) {
             throw new FailResponse(ExceptionEnum.COMPANY_VERIFYING_RESULT_REASON_ERROR);
         }
         Common.UserDetailsImpl currentUser = Common.getPrincipal();
-        if(currentUser == null) {
+        if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
         CompanyVerification companyVerification = companyVerificationRepository.findOne(id);
         Company company = companyVerification.getCompany();
         Date date = new Date();
-        if(ApplyTypeEnum.AUTHENTICATION.equals(companyVerification.getApplyType())){
-            if(!CompanyStatusEnum.VERIFYING.equals(company.getStatus())){
+        if (ApplyTypeEnum.AUTHENTICATION.equals(companyVerification.getApplyType())) {
+            if (!CompanyStatusEnum.VERIFYING.equals(company.getStatus())) {
                 throw new FailResponse(ExceptionEnum.COMPANY_STATUE_ERRROR);
             }
-            if (verifyResult.result) {
+            if (verifyResult.getResult()) {
                 company.setStatus(CompanyStatusEnum.ENABLED);
                 company.setVerifyTime(date);
                 company.setLastModifiedTime(date);
                 company.setManager(companyVerification.getApplyUser());
                 User user = companyVerification.getApplyUser();
-                Role managerRole = new Role();
-                managerRole.setName("ROLE_MANAGER");
-                managerRole.setId(2);
+                Role managerRole = roleRepository.findByName(Role.defaultRole.MANAGER.getName());
                 user.setRole(managerRole);
                 userRepository.save(user);
-            } else{
+            } else {
                 company.setStatus(CompanyStatusEnum.UNVERIFYIED);
                 company.setLastModifiedTime(date);
             }
-        } else {
-            if(verifyResult.result){
+        } else if (ApplyTypeEnum.EDITIONUPGREADE.equals(companyVerification.getApplyType())) {
+            if (verifyResult.getResult()) {
                 Set<SystemEditionEnum> openEditions = company.getOpenEditions();
                 openEditions.add(SystemEditionEnum.valueOf(companyVerification.getApplyInfo()));
                 company.setLastModifiedTime(date);
+                // 旗下团队也修改版本
+                for (Company children : company.getChildren()) {
+                    children.getOpenEditions().add(SystemEditionEnum.valueOf(companyVerification.getApplyInfo()));
+                    companyRepository.save(children);
+                }
             }
+        } else if (ApplyTypeEnum.INFOCHANGE.equals(companyVerification.getApplyType())) {
+            // TODO: 2018/3/1  信息变更
+        } else {
+            throw new IllegalArgumentException("审批类型异常");
         }
-        companyVerification.setVerifyResult(verifyResult.result);
-        companyVerification.setReason(verifyResult.reason);
+        companyVerification.setVerifyResult(verifyResult.getResult());
+        companyVerification.setReason(verifyResult.getReason());
         companyVerification.setVerifyTime(date);
         companyVerification.setVerifyUser(currentUser.getUser());
 
@@ -134,47 +147,47 @@ public class AdminController {
 
     @RequestMapping(value = "/company/list")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseBody companyList(@PageableDefault(sort = {"verifyTime"},direction = Sort.Direction.DESC)Pageable page) {
+    public ResponseBody companyList(@PageableDefault(sort = {"verifyTime"}, direction = Sort.Direction.DESC) Pageable page) {
 
         Page<Company> companyPage = companyRepository.findByStatus(page);
-        Map<String,Object> returnMap = new HashMap<>();
+        Map<String, Object> returnMap = new HashMap<>();
         List<CompanyVO> companyList = new ArrayList<>();
-        for (Company company: companyPage) {
-            Map<String,Object> companyMap = new HashMap<>();
+        for (Company company : companyPage) {
+            Map<String, Object> companyMap = new HashMap<>();
             CompanyVO companyVO = new CompanyVO(company);
             companyList.add(companyVO);
         }
-        returnMap.put("companyList",companyList);
-        returnMap.put("number",companyPage.getNumber());
-        returnMap.put("size",companyPage.getSize());
-        returnMap.put("totalElements",(int)companyPage.getTotalElements());
-        returnMap.put("totalPages",companyPage.getTotalPages());
+        returnMap.put("companyList", companyList);
+        returnMap.put("number", companyPage.getNumber());
+        returnMap.put("size", companyPage.getSize());
+        returnMap.put("totalElements", (int) companyPage.getTotalElements());
+        returnMap.put("totalPages", companyPage.getTotalPages());
         return new ResponseBody(returnMap);
     }
 
     @RequestMapping(value = "/companyVerification/list")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseBody companyVerificationList(@PageableDefault(size=15,sort = {"applyTime"},direction = Sort.Direction.DESC)Pageable page) {
+    public ResponseBody companyVerificationList(@PageableDefault(size = 15, sort = {"applyTime"}, direction = Sort.Direction.DESC) Pageable page) {
         Common.UserDetailsImpl currentUser = Common.getPrincipal();
-        if(currentUser == null) {
+        if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
         Page<CompanyVerification> companyVerificationPage = companyVerificationRepository.findAll(page);
-        Map<String,Object> returnMap = new HashMap<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss");
-        List<Map<String,Object>> companyVerificationList = new ArrayList<>();
-        for (CompanyVerification companyVerification: companyVerificationPage) {
-            Map<String,Object> companyVerificationMap = new HashMap<>();
+        Map<String, Object> returnMap = new HashMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<Map<String, Object>> companyVerificationList = new ArrayList<>();
+        for (CompanyVerification companyVerification : companyVerificationPage) {
+            Map<String, Object> companyVerificationMap = new HashMap<>();
             CompanyVerificationVO companyVerificationVO = new CompanyVerificationVO(companyVerification);
             companyVerificationMap.put("companyVerification", companyVerificationVO);
-            companyVerificationMap.put("verificationTime", companyVerificationVO.getVerifyTime() == null ? "待审核":sdf.format(companyVerificationVO.getVerifyTime()));
+            companyVerificationMap.put("verificationTime", companyVerificationVO.getVerifyTime() == null ? "待审核" : sdf.format(companyVerificationVO.getVerifyTime()));
             companyVerificationList.add(companyVerificationMap);
         }
-        returnMap.put("companyVerificationList",companyVerificationList);
-        returnMap.put("number",companyVerificationPage.getNumber());
-        returnMap.put("size",companyVerificationPage.getSize());
-        returnMap.put("totalElements",(int)companyVerificationPage.getTotalElements());
-        returnMap.put("totalPages",companyVerificationPage.getTotalPages());
+        returnMap.put("companyVerificationList", companyVerificationList);
+        returnMap.put("number", companyVerificationPage.getNumber());
+        returnMap.put("size", companyVerificationPage.getSize());
+        returnMap.put("totalElements", (int) companyVerificationPage.getTotalElements());
+        returnMap.put("totalPages", companyVerificationPage.getTotalPages());
         return new ResponseBody(returnMap);
     }
 

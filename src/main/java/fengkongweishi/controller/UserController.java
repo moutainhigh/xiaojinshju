@@ -2,6 +2,7 @@ package fengkongweishi.controller;
 
 import fengkongweishi.entity.company.Company;
 import fengkongweishi.entity.company.CompanyRepository;
+import fengkongweishi.entity.role.Role;
 import fengkongweishi.entity.role.RoleRepository;
 import fengkongweishi.entity.user.User;
 import fengkongweishi.entity.user.UserRegister;
@@ -88,7 +89,7 @@ public class UserController {
         if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
-        if (!"ROLE_MANAGER".equals(currentUser.getUser().getRole().getName())) {
+        if (!Role.defaultRole.MANAGER.getName().equals(currentUser.getUser().getRole().getName())) {
             throw new FailResponse(ExceptionEnum.NOT_HAVE_POWER);
         }
         Company company = companyRepository.findOne(currentUser.getCompany().getId());

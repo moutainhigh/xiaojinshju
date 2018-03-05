@@ -52,6 +52,7 @@
                                 laypage.render({
                                     elem: 'companyPage'
                                     ,count: result.data.totalElements
+                                    ,theme:"#4777B6"
                                     ,limit: 7
                                     ,limits:[6,7,8]
                                     ,layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
@@ -86,6 +87,7 @@
                                 laypage.render({
                                     elem: 'consumptionPage'
                                     ,count: resResult.data.totalElements
+                                    ,theme:"#4777B6"
                                     ,limit: 7
                                     ,limits:[6,7,8]
                                     ,layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
@@ -117,13 +119,13 @@
 
                 $scope.personSms = function (phone) {
                     if (phone.length !== 11) {
-                        alert('请输入11位手机号，您输入' + phone.length + '位');
+                        $rootScope.infoBox('请输入11位手机号，您输入' + phone.length + '位');
                     } else {
                         $http({method: "get", url: '/user/registerSms?username=' + phone}).then(function (response) {
                             console.log(response);
                             var resResult = response.data;
                             if (resResult.status == 'fail') {
-                                alert(resResult.message);
+                                $rootScope.infoBox(resResult.message);
                                 return 0;
                             } else {
 
@@ -159,21 +161,21 @@
                     }else{
                         $http({method:"GET",url:"/company/user/show?username="+$scope.newTeam.username}).then(
                             function (result) {
-                                if (result.data.code == 0) {
+                                if (result.data.code === 0) {
                                     $scope.newTeam.nickname = result.data.data.nickname;
                                     $scope.managerVerify = {
                                         code: 'right',
                                         message: "用户存在，可直接添加"
                                     };
                                     $scope.addTeam =function () {
-                                        $http({method:"GET",url:"/company/addTeam?userName="+$scope.newTeam.username+"&companyName="+$scope.newTeam.name}).then(
+                                        $http({method:"GET",url:"/company/addTeam?userName="+$scope.newTeam.username+"&companyName="+$scope.newTeam.name+"&sms="+$scope.newTeam.sms}).then(
                                             function (result) {
                                                 $timeout(function () {
                                                     if(result.data.status === 'fail'){
-                                                        alert(result.data.message);
+                                                        $rootScope.infoBox(result.data.message);
                                                     }else{
                                                         $("#create_team").modal("hide");
-                                                        alert("添加成功");
+                                                        $rootScope.infoBox("添加成功");
                                                         $scope.companyFlag = false;
                                                         $scope.getMemberList(7,0);
                                                         $scope.getCompanyInfo();
@@ -185,7 +187,7 @@
                                 }else {
                                     $scope.managerVerify = {
                                         code: 'wrong',
-                                        message: "该用户不存在，请先注册"
+                                        message: "用户不存在，请先注册"
                                     };
                                     $scope.addTeam =function () {
                                         $http({method:"POST",url:"/company/registerAddTeam?companyName="+$scope.newTeam.name,data:$scope.newTeam}).then(
@@ -193,10 +195,10 @@
                                             function (result) {
                                                 $timeout(function(){
                                                     if(result.data.status === 'fail'){
-                                                        alert(result.data.message);
+                                                        $rootScope.infoBox(result.data.message);
                                                     }else{
                                                         $("#create_team").modal("hide");
-                                                        alert("添加成功");
+                                                        $rootScope.infoBox("添加成功");
                                                         $scope.getMemberList(7,0);
                                                         $scope.getCompanyInfo();
                                                     }
@@ -230,17 +232,17 @@
                                     $timeout(function () {
                                         $scope.addPerson =function () {
                                             if($scope.personPredata.username === '' || $scope.personPredata.nickname === '' || $scope.personPredata.sms === ''){
-                                                alert("请完善信息");
+                                                $rootScope.infoBox("请完善信息");
                                                 return 0;
                                             }
                                             $http({method:"GET",url:"/company/user/add?username="+$scope.personPredata.username+"&sms="+$scope.personPredata.sms}).then(
                                                 function (result) {
                                                     $timeout(function () {
                                                         if(result.data.status === 'fail'){
-                                                            alert(result.data.message);
+                                                            $rootScope.infoBox(result.data.message);
                                                         }else{
                                                             $("#person_add").modal("hide");
-                                                            alert("添加成功");
+                                                            $rootScope.infoBox("添加成功");
                                                             $scope.companyFlag = false;
                                                             $scope.getMemberList(7,0);
                                                         }
@@ -251,12 +253,12 @@
                                 }else{
                                     $scope.userVerify = {
                                         code: "wrong",
-                                        message:"该用户不存在，请先注册"
+                                        message:"用户不存在，请先注册"
                                     };
                                     $scope.addPerson =function () {
                                         for(var key in $scope.personPredata){
                                             if($scope.personPredata[key] === ''){
-                                                alert('请先完善信息');
+                                                $rootScope.infoBox('请先完善信息');
                                                 return 0 ;
                                             }
                                         }
@@ -264,10 +266,10 @@
                                             function (result) {
                                                 $timeout(function () {
                                                     if(result.data.status === "fail"){
-                                                        alert(result.data.message);
+                                                        $rootScope.infoBox(result.data.message);
                                                     }else {
                                                         $("#person_add").modal("hide");
-                                                        alert("添加成功");
+                                                        $rootScope.infoBox("添加成功");
                                                         $scope.companyFlag = false;
                                                         $scope.getMemberList(7,0);
                                                     }
@@ -294,7 +296,7 @@
                                     if(result.data.status === "success"){
                                         $timeout(function () {
                                             $("#team_turn_on").modal("hide");
-                                            alert("移交成功");
+                                            $rootScope.infoBox("移交成功");
                                             $scope.getMemberList(7,0);
                                             $http.get("/user/myInfo").success(function(resResult){
                                                 resResult = resResult.data;
@@ -303,7 +305,7 @@
                                             $scope.getCompanyInfo();
                                         },0,false)
                                     }else {
-                                        alert(result.data.message);
+                                        $rootScope.infoBox(result.data.message);
                                     }
                                 }
                             )
@@ -313,9 +315,9 @@
                     $http({method:"GET",url:"/company/employeesList/delete/"+id}).then(
                         function (result) {
                             if(result.data.status === 'success'){
-                                alert("删除成功");
+                                $rootScope.infoBox("删除成功");
                             }else{
-                                alert("删除失败");
+                                $rootScope.infoBox("删除失败");
                             }
                             $scope.companyFlag = false;
                             $scope.getMemberList(7,0);
@@ -340,7 +342,7 @@
                     $http({method: "POST", url: '/company/deposit', data:{platform:'ALIPAY',amount:$scope.deposit_value}}).then(function (response) {
                         var resResult = response.data;
                         if (typeof resResult.status != 'undefined' && resResult.status == 'fail') {
-                            alert(resResult.msg);
+                            $rootScope.infoBox(resResult.msg);
                         } else {
                             jQuery("#alipay_return").html(response.data);
                         }
@@ -382,7 +384,7 @@
                            if(result.data.status === 'success'){
                                $scope.getMemberList(7,0);
                            }else{
-                               alert(result.data.message);
+                               $rootScope.infoBox(result.data.message);
                            }
 
                         }
@@ -425,13 +427,12 @@
     <div class="form-horizontal clearfix">
         <div class="col-lg-12">
             <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
-                <!--<span>{{companyInfo.companyName}}</span>-->
                 <ul class="layui-tab-title">
                     <li class="layui-this">企业基本信息</li>
                     <li>企业成员</li>
                     <li>企业账户</li>
                 </ul>
-                <div class="layui-tab-content contentFont" style="height: 100px;">
+                <div class="layui-tab-content contentFont" style="margin: 30px;padding: 0px">
                     <!--企业基本信息-->
                     <div class="layui-tab-item layui-show" id="infoTable">
                         <div class="layui-row layui-col-space30" ng-if="!companyInfo.parent">
@@ -545,25 +546,30 @@
                     <!--企业成员-->
                     <div class="layui-tab-item">
                         <form class="layui-form layui-row">
-                            <div class="w inline m-r">
+                            <div class="pull-left inline m-r">
                                 <input type="text" class="form-control"
                                        placeholder="请输入姓名"
                                        ng-model="searchInfo.name"
                                        autocomplete="off">
                             </div>
-                            <div class="w inline m-r">
+                            <div class="pull-left inline m-r">
                                 <input type="text" class="form-control"
                                        placeholder="请输入联系方式"
                                        ng-model="searchInfo.phone"
                                        autocomplete="off">
                             </div>
-                            <div class="w inline m-r">
-                                <button class="layui-btn layui-btn-sm"
-                                        ng-click="clearSearchInfo()">清除</button>
-                                <button class="layui-btn layui-btn-sm"
-                                        ng-click="searchMemberList()">查询</button>
+                            <div class="pull-left l-r inline" style="margin: 2px 15px">
+                                <button class="layui-btn layui-btn-sm blueBtn"
+                                        ng-click="searchMemberList()"
+                                >查询
+                                </button>
+                                <button class="layui-btn layui-btn-sm layui-btn-primary blueBtn_primary"
+                                        ng-click="clearSearchInfo()"
+                                >清除
+                                </button>
                             </div>
-                            <div class="w inline m-r" style="width: 250px" ng-if="myinfo.role.name === 'ROLE_MANAGER' || myinfo.role.name === 'ROLE_LEADER'">
+
+                            <div class="pull-right inline m-l" style="width: 250px" ng-if="myinfo.role.name === 'ROLE_MANAGER' || myinfo.role.name === 'ROLE_LEADER'">
                                 <button class="layui-btn layui-btn-sm layui-btn-primary"
                                         data-target="#person_add"
                                         data-toggle="modal">新增成员</button>
@@ -575,10 +581,10 @@
                                 <button class="layui-btn layui-btn-sm layui-btn-primary"
                                         data-target="#create_team"
                                         data-toggle="modal"
-                                        ng-if="myinfo.role.name === 'ROLE_MANAGER'">创建团队</button>
+                                        ng-if="myinfo.role.name === 'ROLE_MANAGER' && myinfo.superiorMember" >创建团队</button>
                             </div>
                         </form>
-                        <table class="layui-table" lay-even="" lay-skin="nob" style="margin-top: 30px">
+                        <table class="layui-table" style="margin: 30px 0px">
                             <colgroup>
                                 <col width="150">
                                 <col width="150">
@@ -616,7 +622,7 @@
                             </tr>
                             </tbody>
                         </table>
-                        <div id="companyPage" style="text-align: center"></div>
+                        <div id="companyPage" class="pageBar" style="top: 500px"></div>
                     </div>
                     <!--企业账户-->
                     <div class="layui-tab-item">
@@ -631,12 +637,12 @@
                                     <div class="tabTitle">{{companyInfo.remainder}}</div>
                                 </div>
                                 <div style="padding: 15px">
-                                    <button class="layui-btn layui-btn-sm layui-btn-normal"
+                                    <button class="layui-btn layui-btn-sm layui-btn-normal blueBtn"
                                             data-target="#account_recharge"
                                             data-toggle="modal">充值</button>
                                 </div>
                             </div>
-                            <table class="layui-table" lay-even="" lay-skin="nob" style="margin-top: 30px">
+                            <table class="layui-table" style="margin: 10px 0px">
                                 <colgroup>
                                     <col width="150">
                                     <col width="150">
@@ -662,7 +668,7 @@
                                 </tr>
                                 </tbody>
                             </table>
-                            <div id="consumptionPage" style="text-align: center"></div>
+                            <div id="consumptionPage" class="pageBar" style="top: 500px"></div>
                         </div>
 
                     </div>
@@ -863,7 +869,7 @@
                                 <div class="form-group">
                                     <label class="col-lg-3 control-label">联系方式：</label>
                                     <div class="col-sm-5">
-                                        <input class="form-control" ng-model="newTeam.username" placeholder="请输入负责人手机号" type="text" ng-change="leaderChange()">
+                                        <input class="form-control" ng-model="newTeam.username" placeholder="请输入负责人联系方式" type="text" ng-change="leaderChange()">
                                     </div>
                                     <div class="col-lg-4" style="margin: 8px 0 0 -25px;">
                                         <span class="text-warning control-label" ng-if="managerVerify.code == 'wrong'"><i class="fa fa-ban"></i> {{managerVerify.message}}</span>
@@ -873,7 +879,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label">负责人姓名：</label>
                                     <div class="col-sm-5">
-                                        <input class="form-control" ng-model="newTeam.nickname"  placeholder="请输入成员姓名" type="text">
+                                        <input class="form-control" ng-model="newTeam.nickname"  placeholder="请输入负责人姓名" type="text">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -925,4 +931,10 @@
             </div>
         </div>
 </div>
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
+    </div>
 </div>

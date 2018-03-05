@@ -5,7 +5,8 @@ import fengkongweishi.entity.company.CompanyRepository;
 import fengkongweishi.entity.customer.Customer;
 import fengkongweishi.entity.moxiecallbacklog.MoxieCallbackLogRepository;
 import fengkongweishi.entity.personreport.*;
-import fengkongweishi.entity.personreport.po.CourtJudgment;
+import fengkongweishi.entity.personreport.po.CourtJudgmentPOItem;
+import fengkongweishi.entity.personreport.vo.CourtJudgmentVOItem;
 import fengkongweishi.enums.ChargeTypeEnum;
 import fengkongweishi.enums.ExceptionEnum;
 import fengkongweishi.enums.MoxieTaskStatusEnum;
@@ -17,7 +18,6 @@ import fengkongweishi.util.Common;
 import fengkongweishi.util.FailResponse;
 import fengkongweishi.util.ResponseBody;
 import fengkongweishi.util.ValidUtils;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -187,16 +188,17 @@ public class ReportController {
     @PreAuthorize("hasRole('MANAGER') or hasRole('LEADER') or hasRole('EMPLOYEE')")
     public ResponseBody courtJudgmentDetail(@PathVariable("reportId") Integer reportId, @PathVariable("docId") String docId) {
         PersonReport report = personReportRepository.findOne(reportId);
-        Optional<CourtJudgment> courtJudgmentOptional = report.getCourtJudgmentPO().getCourtJudgments().stream().filter(e -> e.getDocId().equals(docId)).findFirst();
-        if (courtJudgmentOptional.isPresent()) {
-            CourtJudgment courtJudgment = courtJudgmentOptional.get();
+        Optional<CourtJudgmentPOItem> courtJudgmentPOItemOptional = report.getCourtJudgmentPO()
+                .getCourtJudgments().stream().filter(e -> e.getDocId().equals(docId)).findFirst();
+        if (courtJudgmentPOItemOptional.isPresent()) {
+            CourtJudgmentPOItem courtJudgment = courtJudgmentPOItemOptional.get();
             if (courtJudgment.isQueried()) {
-                throw new FailResponse(ExceptionEnum.REPORT_COURTJUDGMENT_DETAIL_QUERIED);
+                return new ResponseBody(new CourtJudgmentVOItem(courtJudgment));
             } else {
                 analyseService.handleCourtJudgmentDetail(courtJudgment);
                 if (courtJudgment.isQueried()) {
                     personReportRepository.save(report);
-                    return new ResponseBody(courtJudgment);
+                    return new ResponseBody(new CourtJudgmentVOItem(courtJudgment));
                 } else {
                     throw new FailResponse(ExceptionEnum.REPORT_COURTJUDGMENT_DETAIL_HANDLE_ERROR);
                 }

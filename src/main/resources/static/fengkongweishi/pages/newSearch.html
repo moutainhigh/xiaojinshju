@@ -23,10 +23,10 @@
                     $http({method:"GET",url:"/company/editionUpgreade?edition=" + edition}).then(
                         function (result){
                            if(result.data.status === "success"){
-                               alert("申请已提交，请耐心等待");
+                               $rootScope.infoBox("申请已提交，请耐心等待");
                                $scope.getStatus();
                            }else{
-                               alert(result.data.message);
+                               $rootScope.infoBox(result.data.message);
                            }
                         }
                     )
@@ -36,11 +36,11 @@
                         $state.go("editionSearch",{edition:$scope.editions[number]});
                         break;
                     case "申请":
-                        if($rootScope.myinfo.role.name === 'ROLE_EMPLOYEE'){
+                        if($rootScope.myinfo.role.name === 'ROLE_MANAGER' && $rootScope.myinfo.superiorMember){
+                            update($scope.editions[number]);
+                        } else{
                             alert("无权限");
-                            return 0;
                         }
-                        update($scope.editions[number]);
                         break;
                     default:
                         return 0;
@@ -139,5 +139,11 @@
             </ul>
         </div>
     </div>
+    </div>
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
     </div>
 </div>

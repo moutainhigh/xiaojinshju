@@ -22,11 +22,11 @@ public class RoleService {
     @PostConstruct
     public void sqlInit() {
         if (roleRepository.count() == 0) {
-            Role admin = new Role("ROLE_ADMIN");
-            Role manager = new Role("ROLE_MANAGER");
-            Role leader = new Role("ROLE_LEADER");
-            Role employee = new Role("ROLE_EMPLOYEE");
-            Role user = new Role("ROLE_USER");
+            Role admin = new Role(Role.defaultRole.ADMIN.getName());
+            Role manager = new Role(Role.defaultRole.MANAGER.getName());
+            Role leader = new Role(Role.defaultRole.LEADER.getName());
+            Role employee = new Role(Role.defaultRole.EMPLOYEE.getName());
+            Role user = new Role(Role.defaultRole.USER.getName());
             roleRepository.save(admin);
             roleRepository.save(manager);
             roleRepository.save(leader);

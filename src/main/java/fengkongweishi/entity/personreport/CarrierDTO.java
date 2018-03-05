@@ -10,7 +10,7 @@ import javax.validation.constraints.Digits;
  * @date 2018/01/20
  */
 public class CarrierDTO {
-    @NotBlank(message = "运营商服务密码不能为空")
+    //@NotBlank(message = "运营商服务密码不能为空")
     private String servicePassword;
     @NotBlank(message = "联系人姓名不能为空")
     @Length(min = 2, max = 5, message = "2-5位中文姓名")

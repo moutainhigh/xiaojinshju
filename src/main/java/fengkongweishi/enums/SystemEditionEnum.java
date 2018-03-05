@@ -10,38 +10,27 @@ public enum SystemEditionEnum {
     /**
      * 基础版
      */
-    PERSONJUNIOR(8, 4, "基础版"),
+    PERSONJUNIOR(8, "基础版"),
     /**
      * 通信版
      */
-    PERSONMOBILE(12, 4, "通信版"),
+    PERSONMOBILE(12, "通信版"),
     /**
      * 淘宝版
      */
-    PERSONECOMMERCE(12, 4, "淘宝版"),
+    PERSONECOMMERCE(12, "淘宝版"),
     /**
      * 全面版
      */
-    PERSONSENIOR(15, 4, "全面版");
+    PERSONSENIOR(15, "全面版");
 
     private Integer price;
-    private Integer educationPrice;
     private String message;
 
-    SystemEditionEnum(Integer price, Integer educationPrice, String message) {
+    SystemEditionEnum(Integer price, String message) {
         this.price = price;
-        this.educationPrice = educationPrice;
         this.message = message;
     }
-
-    public Integer getEducationPrice() {
-        return educationPrice;
-    }
-
-    public void setEducationPrice(Integer educationPrice) {
-        this.educationPrice = educationPrice;
-    }
-
 
     public Integer getPrice() {
         return price;

@@ -25,6 +25,8 @@ public class ConsumeAnsyc {
   
 
 
+    
+
     @Override
     public String toString() {
         return "ConsumeAnsyc [datetime=" + datetime + ", consumeAmount=" + consumeAmount + ", consumeTime="

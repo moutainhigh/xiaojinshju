@@ -1,10 +1,15 @@
 package fengkongweishi.service;
 
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfGState;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfStamper;
 import fengkongweishi.entity.customersearchlog.CustomerSearchLog;
 import fengkongweishi.entity.customersearchlog.CustomerSearchLogRepository;
 import fengkongweishi.entity.personreport.PersonReport;
 import fengkongweishi.entity.personreport.PersonReportRepository;
-import fengkongweishi.entity.personreport.PersonReportVO;
+import fengkongweishi.entity.personreport.BasePersonReportVO;
 import fengkongweishi.enums.SystemEditionEnum;
 import fengkongweishi.service.report.PdfHelper;
 import fengkongweishi.util.BeanToMapUtils;
@@ -14,10 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.NumberFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,6 +41,7 @@ public class PrintReportService {
     @Autowired
     private CustomerSearchLogRepository customerSearchLogRepository;
     private static int reportNo = 10;
+    private static String waterMarkPNG = "http://xiaojincom.oss-cn-hangzhou.aliyuncs.com/templatePdfWaterMaker.png";
 
     /**
      * 打印PDF报告
@@ -47,14 +50,14 @@ public class PrintReportService {
      *
      * @return
      */
-    public String printReportPDF(Integer id) throws Exception {
+    public Object printReportPDF(Integer id) throws Exception {
         PersonReport personReport = personReportRepository.findOne(id);
         if (StringUtils.isNotBlank(personReport.getPdfUrl())) {
             return personReport.getPdfUrl();
         }
-        Map<String, Object> map = getReportDetails(personReport);
+        Object map = getReportDetails(personReport);
 
-        String pdfUrl = createPDF(map, "hello.ftl");
+        String pdfUrl = createPDF(map, "pdftemplate.ftl");
 
         personReport.setPdfUrl(pdfUrl);
         personReportRepository.save(personReport);
@@ -125,9 +128,11 @@ public class PrintReportService {
         String imageDiskPath = "resources";
 
         OutputStream outputStream = generateToFile(ftlPath, fileName, imageDiskPath, data);
+        //添加水印
+        OutputStream wateroutput = setWaterMaker(outputStream);
         Map<String, Object> map = new HashMap<>();
         map.put("newFileName", formatDateTime() + ".pdf");
-        return fileUploadService.upload(map, parseOutputStreamToInputStream(outputStream));
+        return fileUploadService.upload(map, parseOutputStreamToInputStream(wateroutput));
 
     }
 
@@ -135,34 +140,10 @@ public class PrintReportService {
     /**
      * 获取报告详情相应的数据
      */
-    public Map<String, Object> getReportDetails(PersonReport personReport) {
+    public Object getReportDetails(PersonReport personReport) {
         CustomerSearchLog customerSearchLog = customerSearchLogRepository.findByReport(personReport);
-        PersonReportVO reportVo = new PersonReportVO(personReport, customerSearchLog.getLevel());
-        Map<String, Object> map = BeanToMapUtils.beanToMap(reportVo);
-
-//        for (Map.Entry<String, Object> m : map.entrySet()) {
-//            if ("callListVO".equals(m.getKey())) {
-////                CallListVO callListVO = new CallListVO();
-////                callListVO = (CallListVO) m.getValue();
-////                Map maps = new HashMap();
-////                map.remove("callListVO");
-////                maps.put("callList", callListVO.getCallList());
-////                maps.put("id", callListVO.getId());
-////                maps.put("color", callListVO.getColor());
-////                map.put("callListVO", maps);
-////                System.out.println(m.getValue());
-////                map.remove()
-//            }
-//
-//            if ("courtJudgmentVO".equals(m.getKey())) {
-//                System.out.println(m.getValue());
-//            }
-//
-//        }
-        /*map.remove("callListVO");
-        CallListVO callListVO = personReport.getCallListVO();
-        Map<String, Object> mapss = BeanToMapUtils.beanToMap(callListVO);
-        map.put("callListVO", mapss);*/
+        BasePersonReportVO reportVo = BasePersonReportVO.create(personReport, customerSearchLog.getLevel());
+        Map<String, Object> map = BeanToMapUtils.beanToMapWithSuper(reportVo);
 
         map.put("reportId", getReportId());
         map.put("createByName", personReport.getCreateBy().getNickname());
@@ -223,6 +204,45 @@ public class PrintReportService {
         String result = format.format(reportNo).replace(",", "");
         reportNo++;
         return formatDateTime() + result;
+    }
+
+    public OutputStream setWaterMaker(OutputStream bos) {
+        try {
+            OutputStream outputStream = new ByteArrayOutputStream();
+            PdfReader reader = new PdfReader(parseOutputStreamToInputStream(bos));
+            PdfStamper pdfStamper = new PdfStamper(reader, outputStream);
+            int total = reader.getNumberOfPages() + 1;
+            PdfContentByte contentByte;
+            PdfGState gs = new PdfGState();
+            for (int i = 1; i < total; i++) {
+                contentByte = pdfStamper.getOverContent(i);
+                gs.setFillOpacity(0.2f);
+                contentByte.beginText();
+                com.itextpdf.text.Image image = com.itextpdf.text.Image.getInstance(waterMarkPNG);
+
+                com.itextpdf.text.Image image1 = com.itextpdf.text.Image.getInstance(waterMarkPNG);
+                com.itextpdf.text.Image image2 = com.itextpdf.text.Image.getInstance(waterMarkPNG);
+                image.scaleToFit(300, 300);
+                image1.scaleToFit(300, 300);
+                image2.scaleToFit(300, 300);
+
+                image1.setAbsolutePosition(100, 506);
+                image2.setAbsolutePosition(100, 306);
+                image.setAbsolutePosition(100, 106);
+
+                contentByte.addImage(image);
+                contentByte.addImage(image1);
+                contentByte.addImage(image2);
+                contentByte.endText();
+            }
+            pdfStamper.close();
+            return outputStream;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

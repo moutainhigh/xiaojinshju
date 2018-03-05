@@ -1,0 +1,678 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Style-Type" content="text/css"/>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: SimSun;
+        }
+
+        @page {
+
+            size: 8.5in 11in;
+            @bottom-center {
+                font-family: SimSun;
+                content: "第 " counter(page) " 页  共 " counter(pages) " 页";
+            }
+        }
+
+        .container {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            z-index: 1;
+            /*background-image: url(http://xiaojincom.oss-cn-hangzhou.aliyuncs.com/templatePdfWaterMaker.jpg);*/
+            background-size: 300px 300px;
+            overflow-x: hidden
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .hr {
+            border-bottom: 2px solid #000;
+            font-size: x-small;
+        }
+
+        .box_title {
+            border-left: 3px solid #000;
+            padding-left: 10px;
+            margin-left: 2.5%;
+            margin-top: 20px;
+        }
+
+        .box_title span {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .box_title span + span {
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        .box_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 13px;
+            font-size: 14px;
+            word-break: break-all;
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+
+        table.box_table td {
+            padding: 0.5em 1em;
+        }
+
+        table.box_table {
+            border-width: 1px 0 0 1px;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.box_table td {
+            border-width: 0 1px 1px 0;
+            border-style: dashed;
+            border-color: #666;
+        }
+
+        table.box_table .color {
+            background-color: #ecedee;
+            font-weight: bold;
+        }
+
+        .appraise {
+            width: 95%;
+            height: 60px;
+            border: 1px dashed #2F4F4F;
+            background-color: #ecedee;
+            margin-top: 13px;
+            margin-left: 2.5%;
+            line-height: 45px;
+            padding-left: 10px;
+        }
+
+        .appraise > span {
+            font-size: 14px;
+            padding-left: 5px;
+        }
+
+        .judge_p {
+
+            width: 95%;
+            min-height: 200px;
+            border: 1px dashed #2F4F4F;
+            background-color: #dbdbdb;
+            margin-top: 13px;
+            margin-left: 2.5%;
+            line-height: 25px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
+        .judge_p p {
+            font-size: 14px;
+            word-break: break-all;
+            word-wrap: break-word;
+            text-indent: 2em;
+        }
+
+        .records_table {
+            border-collapse: collapse;
+            margin-left: 2.5%;
+            table-layout: fixed;
+            width: 95%;
+            border: 0;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        table.records_table th, td {
+            padding: 0.3em 1em;
+        }
+
+        table.records_table .color {
+            background-color: #dbdbdb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>个人综合信用报告</h1>
+    <div class="hr">
+    <span>报告编号：${reportId}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;数据查询时间：${createAt}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    	</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;报告生成时间：<#if finishAt??>${finishAt} <#else >${.now}</#if>
+    	</span>
+    </div>
+    <div class="box_title"><span>个人信息</span></div>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">姓名</td>
+            <td width="25%">${idCardVO.name}</td>
+            <td width="20%" class="color">性别</td>
+            <td width="30%">${idCardVO.sex}</td>
+
+        </tr>
+        <tr>
+            <td class="color">身份证号码</td>
+            <td>${idCardVO.idCard}</td>
+            <td class="color">年龄</td>
+            <td>${idCardVO.age}</td>
+        </tr>
+        <tr>
+            <td class="color">联系电话</td>
+            <td>${idCardVO.mobile}</td>
+            <td class="color">银行卡号</td>
+            <td>${idCardVO.bankCard}</td>
+        </tr>
+        <tr>
+            <td class="color">出生地</td>
+            <td>${idCardVO.province}省&nbsp;${idCardVO.city}市&nbsp;${idCardVO.town}</td>
+            <td class="color">地址</td>
+            <td>${idCardVO.address}</td>
+        </tr>
+    </table>
+
+    <div class="box_title">
+        <span>芝麻信用</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;蚂蚁金服旗下独立的第三方征信机构</span>
+    </div>
+    <#if zhimaScoreVO.color=='SUCCESS'>
+    <div class="appraise">
+        <span>芝麻信用评价分&nbsp;&nbsp;&nbsp;</span><strong><#if zhimaScoreVO.score??>${zhimaScoreVO.score}</#if></strong>
+    </div>
+    <#else>
+    <div class="appraise">
+        在本数据库中未查到
+    </div>
+    </#if>
+   <#if idCheckVO??>
+    <div class="box_title">
+        <span>身份校验</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;手机号、姓名、身份证、银行卡等校验</span>
+    </div>
+       <#if idCheckVO.nmPhCn??&&idCheckVO.adCn??&&idCheckVO.bcCn??>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">三要素校验</td>
+            <td width="75%"><#if idCheckVO.nmPhCn??>${idCheckVO.nmPhCn}</#if></td>
+
+
+        </tr>
+        <tr>
+            <td class="color">常用地址</td>
+            <td><#if idCheckVO.adCn??>${idCheckVO.adCn}</#if></td>
+
+        </tr>
+        <tr>
+            <td class="color">银行卡认证</td>
+            <td><#if idCheckVO.bcCn??>${idCheckVO.bcCn}</#if></td>
+
+        </tr>
+    </table>
+       <#else >
+     <div class="appraise">
+         在本数据库中未查到
+     </div>
+       </#if>
+   </#if>
+
+    <#if educationVO?? >
+
+    <div class="box_title">
+        <span>学历信息</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;毕业院校、学历、专业等信息查询</span>
+    </div>
+        <#if educationVO.name??>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">姓名</td>
+            <td width="25%">${educationVO.name}</td>
+            <td width="20%" class="color">学历</td>
+            <td width="30%">${educationVO.degree}</td>
+
+        </tr>
+        <tr>
+            <td class="color">学校</td>
+            <td>${educationVO.college}</td>
+            <td class="color">院校类型</td>
+            <td>${educationVO.collegeType}</td>
+        </tr>
+        <tr>
+            <td class="color">毕业时间</td>
+            <td>${educationVO.graduateTime}</td>
+            <td class="color">毕业结论</td>
+            <td>${educationVO.studyResult}</td>
+        </tr>
+    </table>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+    <#if wealthVO??>
+
+    <div class="box_title">
+        <span>财富信息</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;淘宝、支付宝、余额宝、花呗等信息查询</span>
+    </div>
+        <#if wealthVO.name??>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">姓名</td>
+            <td width="25%">${wealthVO.name}</td>
+            <td width="20%" class="color">淘宝昵称</td>
+            <td width="30%">${wealthVO.taobaoNickName}</td>
+        </tr>
+        <tr>
+            <td class="color">淘宝VIP等级</td>
+            <td>${wealthVO.taobaoVIP}</td>
+            <td class="color">淘宝成长值</td>
+            <td>${wealthVO.taobaoGrowth}</td>
+        </tr>
+        <tr>
+            <td class="color">绑定手机号</td>
+            <td>${wealthVO.mobile}</td>
+            <td class="color">绑定支付宝账号</td>
+            <td>${wealthVO.alipayAccount}</td>
+        </tr>
+        <tr>
+            <td class="color">支付宝余额</td>
+            <td>${wealthVO.alipayBalance}</td>
+            <td class="color">余额宝余额</td>
+            <td>${wealthVO.yuebaoBalance}</td>
+        </tr>
+        <tr>
+            <td class="color">花呗授信额度</td>
+            <td>${wealthVO.antCheckLaterCreditLine}</td>
+            <td class="color">花呗可用额度</td>
+            <td>${wealthVO.antCheckLaterAvailableCredit}</td>
+        </tr>
+    </table>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+    <#if consumeVO??>
+
+    <div class="box_title">
+        <span>消费分析</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;淘宝月度消费情况、及近期订单</span>
+    </div>
+        <#if consumeVO.consumeOrders??>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">时间</td>
+            <td width="25%" class="color">消费金额（元）</td>
+            <td width="50%" class="color">消费详情</td>
+        </tr>
+        <#list consumeVO.consumeOrders as item>
+        <tr>
+            <td>${item.datetime}</td>
+            <td>${item.money}</td>
+            <td>${item.event}</td>
+        </tr>
+        </#list>
+    </table>
+        <#else>
+    <div class="appraise">
+        在本数据库中未查到
+    </div>
+        </#if>
+    </#if>
+
+    <!-- 真实地址 -->
+    <#if deliverAddressVO??>
+    <div class="box_title">
+        <span>真实地址</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;淘宝收货人姓名、地址、联系方式</span>
+    </div>
+        <#if deliverAddressVO.deliverAddresses?? && deliverAddressVO.deliverAddresses?size gt 0>
+<table class="box_table">
+    <tr>
+        <td width="13%" class="color">姓名</td>
+        <td width="20%" class="color">电话</td>
+        <td width="15%" class="color">邮编</td>
+        <td width="37%" class="color">地址</td>
+        <td width="15%" class="color">备注</td>
+    </tr>
+        <#list deliverAddressVO.deliverAddresses as item>
+        <tr>
+            <td>${item.name}</td>
+            <td>${item.phone}</td>
+            <td>${item.zipCode}</td>
+            <td>${item.address}</td>
+            <td><#if item.defaultAddress=='true'>默认收货地址</#if></td>
+        </tr>
+        </#list>
+</table>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+
+
+    <#if multipleHeadLendVO??>
+    <div class="box_title">
+        <span>多头借贷</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;验证是否命中网贷注册、申请、逾期失信黑名单</span>
+    </div>
+        <#if multipleHeadLendVO.multipleHeadLends?size gt 0>
+
+    <table class="box_table">
+
+        <tr>
+            <td width="25%" class="color">所属事件类型</td>
+            <td width="75%" class="color">命中事件</td>
+        </tr>
+            <#list multipleHeadLendVO.multipleHeadLends as item>
+        <tr>
+            <td>${item.type}</td>
+            <td>${item.content}</td>
+        </tr>
+            </#list>
+    </table>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+
+
+    <#if overdueCreditVO??>
+    <div class="box_title">
+        <span>信贷逾期</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;银行、P2P、网贷各行业的黑名单、包括逾期、不良、失联等等</span>
+    </div>
+        <#if overdueCreditVO.overdueCredits?? && overdueCreditVO.overdueCredits?size gt 0>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">所属事件类型</td>
+            <td width="75%" class="color">命中事件</td>
+        </tr>
+        <#list overdueCreditVO.overdueCredits as item>
+        <tr>
+            <td><#if item.type??> ${item.type}</#if></td>
+            <td><#if item.content??>${item.content}</#if></td>
+        </tr>
+        </#list>
+    </table>
+        <#else >
+        <div class="appraise">
+            在本数据库中未查到
+        </div>
+        </#if>
+    </#if>
+
+
+    <#if fraudVO??>
+    <div class="box_title">
+        <span>潜在风险</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;基于腾讯大数据</span>
+    </div>
+        <#if fraudVO.frauds?size gt 0>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">所属事件类型</td>
+            <td width="75%" class="color">命中事件</td>
+        </tr>
+        <#list fraudVO.frauds as item>
+        <tr>
+            <td>${item.type}</td>
+            <td>${item.content}</td>
+        </tr>
+        </#list>
+    </table>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+
+    <#if violationVO??>
+    <div class="box_title">
+        <span>车辆违章</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;车辆当前违章情况</span>
+    </div>
+
+        <#if violationVO.violationSet??&& violationVO.violationSet?size gt 0>
+
+    <table class="box_table">
+        <tr>
+            <td width="15%" class="color">时间</td>
+            <td width="5%" class="color">扣分</td>
+            <td width="10%" class="color">扣款</td>
+
+            <td width="25%" class="color">地点</td>
+            <td width="25%" class="color">违章内容</td>
+        </tr>
+        <#list violationVO.violationSet as item>
+        <tr>
+            <td>${item.time}</td>
+            <td>${item.score}</td>
+            <td>${item.fine}</td>
+
+            <td>${item.address}</td>
+            <td>${item.reason}</td>
+        </tr>
+        </#list>
+    </table>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+
+
+
+    <#if dishonestBlackVO??>
+    <div class="box_title">
+        <span>法院失信</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;包括执行类型、法院、地区、执行情况等信息</span>
+    </div>
+        <#if dishonestBlackVO.dishonestBlackList??>
+            <#if dishonestBlackVO.dishonestBlackList?size gt 0>
+                <#list dishonestBlackVO.dishonestBlackList as item>
+         <table class="box_table">
+             <tr>
+                 <td width="25%" class="color">生效义务</td>
+                 <td width="75%">${item.duty}</td>
+             </tr>
+             <tr>
+                 <td class="color">具体情形</td>
+                 <td>${item.disruptType}</td>
+             </tr>
+             <tr>
+                 <td class="color">依据文号</td>
+                 <td>${item.code}</td>
+             </tr>
+             <tr>
+                 <td class="color">公告日期</td>
+                 <td>${item.pubTime}</td>
+             </tr>
+             <tr>
+                 <td class="color">执行法院</td>
+                 <td>${item.court}</td>
+             </tr>
+             <tr>
+                 <td class="color">执行省份</td>
+                 <td>${item.area}</td>
+             </tr>
+             <tr>
+                 <td class="color">履行情况</td>
+                 <td>${item.performance}</td>
+             </tr>
+         </table>
+                </#list>
+            <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+            </#if>
+        </#if>
+
+    </#if>
+    <!-- 刑事犯罪 -->
+    <#if criminalVO??>
+    <div class="box_title">
+        <span>刑事犯罪</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;包括案件类型、案件数量、案件登记、刑罚时长、案件来源等信息</span>
+    </div>
+        <#if criminalVO.criminalList?size gt 0>
+            <#list criminalVO.criminalList as item>
+    <table class="box_table">
+        <tr>
+            <td width="25%" class="color">涉案类型</td>
+            <td width="75%">${item.caseSource}</td>
+        </tr>
+        <tr>
+            <td class="color">案件类型</td>
+            <td>${item.crimeType}</td>
+        </tr>
+        <tr>
+            <td class="color">案件等级</td>
+            <td>${item.caseLevel}</td>
+        </tr>
+        <tr>
+            <td class="color">刑罚时长</td>
+            <td>${item.casePeriod}</td>
+        </tr>
+        <tr>
+            <td class="color">案件来源</td>
+            <td>${item.caseSource}</td>
+        </tr>
+    </table>
+            </#list>
+        <#else >
+        <div class="appraise">
+            在本数据库中未查到
+        </div>
+        </#if>
+    </#if>
+
+
+    <#if courtJudgmentVO??>
+    <div class="box_title">
+        <span>法院判决</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;包括裁判文书类型、法院、地区、案由、判决结果等信息</span>
+    </div>
+        <#if courtJudgmentVO.courJudgmentList?? && courtJudgmentVO.courJudgmentList?size gt 0>
+            <#list courtJudgmentVO.courJudgmentList as item>
+    <div class="judge_p">
+        <p>
+            <#if item.judgeResult??>${item.judgeResult} <#else >在本数据库中未查到判决相关内容</#if>
+
+        </p>
+    </div>
+            </#list>
+        <#else >
+         <div class="appraise">
+             在本数据库中未查到
+         </div>
+        </#if>
+    </#if>
+
+    <#if socialContactVO??>
+<div class="box_title">
+    <span>社交分析</span>
+    <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;关机情况、互通号码、活跃区域等信息</span>
+</div>
+        <#if socialContactVO.color??&& socialContactVO.color=='SUCCESS'>
+<table class="box_table">
+         <#if socialContactVO.linkmanChecks?? && socialContactVO.linkmanChecks?size gt 0>
+             <#list socialContactVO.linkmanChecks as item>
+    <tr>
+
+        <td width="25%" class="color">${item.relationship}</td>
+        <td width="75%">
+            ${item.contactName}&nbsp;&nbsp;&nbsp;${item.cellPhone}<br/>
+            ${item.checkMobile},${item.checkXiaohao}<br/>
+        </td>
+    </tr>
+             <#--<tr>-->
+
+
+             <#--<td class="color">${item.relationship}</td>-->
+             <#--<td>-->
+             <#--${item.contactName}&nbsp;&nbsp;&nbsp;${item.cellPhone}<br/>-->
+             <#--${item.checkMobile},${item.checkXiaohao}<br/>-->
+
+             <#--</td>-->
+             <#--</tr>-->
+             </#list>
+         </#if>
+    <tr>
+        <td class="color">社交情况</td>
+        <td><#if socialContactVO.contactEachOther??>${socialContactVO.contactEachOther}<br/></#if>
+            <#if socialContactVO.regularCircle??>
+                ${socialContactVO.regularCircle}<br/></#if>
+            <#if socialContactVO.contactsClass1BlacklistCnt?? && socialContactVO.contactsClass1BlacklistCnt??>
+                ${socialContactVO.contactsClass1BlacklistCnt + socialContactVO.contactsClass2BlacklistCnt}人在黑名单中</#if>
+        </td>
+    </tr>
+    <tr>
+        <td class="color">关机情况</td>
+        <td>${socialContactVO.phoneSilent}</td>
+    </tr>
+</table>
+        <#else >
+    <div class="appraise">
+        在本数据库中未查到
+    </div>
+        </#if>
+    </#if>
+
+    <#if callListVO??>
+    <div class="box_title">
+        <span>通话记录</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;关机情况、互通号码、活跃区域等信息</span>
+    </div>
+        <#if callListVO.callList?? && callListVO.callList?size gt 0>
+    <table class="records_table">
+        <tr>
+            <td width="10%" class="color">主叫</td>
+            <td width="10%" class="color">被叫</td>
+            <td width="25%" class="color">号码</td>
+            <td width="10%" class="color">城市</td>
+            <td width="25%" class="color">公司</td>
+            <td width="20%" class="color">通话时长(分钟)</td>
+        </tr>
+    <#list callListVO.callList as call>
+        <tr>
+            <td>${call.dialCnt}</td>
+            <td>${call.dialedCnt}</td>
+            <td>${call.peerNum}</td>
+            <td>${call.city}</td>
+            <td>${call.companyName}</td>
+            <td>${(call.callTime/60)?int +1}</td>
+        </tr>
+    </#list>
+    </table>
+        <#else >
+    <div class="appraise">
+        在本数据库中未查到
+    </div>
+        </#if>
+    </#if>
+</div>
+</body>
+</html>

@@ -87,9 +87,9 @@ public class CompanyController {
     /**
      * 公司团队列表
      */
-    @RequestMapping(value="/teamList",method = RequestMethod.POST)
+    @RequestMapping(value = "/teamList", method = RequestMethod.POST)
     @PreAuthorize("hasRole('MANAGER') or hasRole('LEADER')")
-    public ResponseBody teamListAndSearch(@RequestBody(required = false)TeamForSearch searchBean, Pageable page){
+    public ResponseBody teamListAndSearch(@RequestBody(required = false) TeamForSearch searchBean, Pageable page) {
         Common.UserDetailsImpl currentUser = Common.getPrincipal();
         if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
@@ -98,24 +98,24 @@ public class CompanyController {
         }
         Company company = companyRepository.findOne(currentUser.getCompany().getId());
         List<TeamVO> teamList = new ArrayList<>();
-        Page<Company> companyPage = companyService.teamListAndSearch(searchBean,page,company);
-        Map<String,Object> returnMap = new HashMap<>();
-        for (Company company1:companyPage.getContent()) {
+        Page<Company> companyPage = companyService.teamListAndSearch(searchBean, page, company);
+        Map<String, Object> returnMap = new HashMap<>();
+        for (Company company1 : companyPage.getContent()) {
             TeamVO teamVO = new TeamVO(company1);
             teamList.add(teamVO);
         }
-        returnMap.put("teamList",teamList);
-        returnMap.put("number",companyPage.getNumber());
-        returnMap.put("size",companyPage.getSize());
-        returnMap.put("totalElements",companyPage.getTotalElements());
-        returnMap.put("totalPages",companyPage.getTotalPages());
+        returnMap.put("teamList", teamList);
+        returnMap.put("number", companyPage.getNumber());
+        returnMap.put("size", companyPage.getSize());
+        returnMap.put("totalElements", companyPage.getTotalElements());
+        returnMap.put("totalPages", companyPage.getTotalPages());
         return new ResponseBody(returnMap);
     }
 
     @Transactional(rollbackOn = Exception.class)
-    @RequestMapping(value="/addTeam",method = RequestMethod.GET)
+    @RequestMapping(value = "/addTeam", method = RequestMethod.GET)
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseBody addTeam(String companyName,String userName,String sms){
+    public ResponseBody addTeam(String companyName, String userName, String sms) {
         Common.UserDetailsImpl currentUser = Common.getPrincipal();
         if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
@@ -124,25 +124,28 @@ public class CompanyController {
         if (company == null) {
             throw new FailResponse(ExceptionEnum.HAVE_NOT_COMPANY);
         }
+        if (company.getParent() != null) {
+            throw new FailResponse(ExceptionEnum.NEW_TEAM_TEAM_ERROR);
+        }
         User manager = userRepository.findByUsername(userName);
-        if("ROLE_ADMIN".equals(manager.getRole().getName())){
+        if (Role.defaultRole.ADMIN.getName().equals(manager.getRole().getName())) {
             throw new FailResponse(ExceptionEnum.ADMIN_CANNOT_JOININ_COMPANY);
         }
-        if("ROLE_MANAGER".equals(manager.getRole().getName())){
+        if (Role.defaultRole.MANAGER.getName().equals(manager.getRole().getName())) {
             throw new FailResponse(ExceptionEnum.NEW_COMPANY_MANAGER_ERROR);
         }
-        if(!smsService.checkSms(userName,sms)){
+        if (!smsService.checkSms(userName, sms)) {
             throw new FailResponse(ExceptionEnum.SMS_ERROR);
         }
-        companyService.addTeam(company,manager,companyName);
+        companyService.addTeam(company, manager, companyName);
         return new ResponseBody("");
 
     }
 
     @Transactional(rollbackOn = Exception.class)
-    @RequestMapping(value="/registerAddTeam",method = RequestMethod.POST)
+    @RequestMapping(value = "/registerAddTeam", method = RequestMethod.POST)
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseBody registerAddTeam(@RequestBody @Valid UserRegister userForm, BindingResult result,String companyName){
+    public ResponseBody registerAddTeam(@RequestBody @Valid UserRegister userForm, BindingResult result, String companyName) {
         if (result.hasErrors()) {
             ValidUtils.getFirstErrorInfo(result);
         }
@@ -152,7 +155,7 @@ public class CompanyController {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
         Company company = companyRepository.findOne(currentUser.getCompany().getId());
-        companyService.addTeam(company,manager,companyName);
+        companyService.addTeam(company, manager, companyName);
         return new ResponseBody("");
     }
 
@@ -220,16 +223,16 @@ public class CompanyController {
     /**
      * 查询版本升级申请
      */
-    @RequestMapping(value = "/editionUpgreade",method = RequestMethod.GET)
+    @RequestMapping(value = "/editionUpgreade", method = RequestMethod.GET)
     @PreAuthorize("hasRole('MANAGER')")
-    public ResponseBody editionUpgreade(String edition){
+    public ResponseBody editionUpgreade(String edition) {
         Common.UserDetailsImpl currentUser = Common.getPrincipal();
         if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
         User user = userRepository.findOne(currentUser.getUser().getId());
         Company company = companyRepository.findOne(currentUser.getCompany().getId());
-        companyService.editionupgreade(company,user,edition);
+        companyService.editionupgreade(company, user, edition);
         return new ResponseBody("");
     }
 
@@ -278,29 +281,30 @@ public class CompanyController {
      */
     @RequestMapping(value = "/user/add", method = RequestMethod.GET)
     @PreAuthorize("hasRole('MANAGER') or hasRole('LEADER')")
-    public ResponseBody addUser(String username,String sms) {
+    public ResponseBody addUser(String username, String sms) {
         Common.UserDetailsImpl currentUser = Common.getPrincipal();
         if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
-        User findOne = userRepository.findByUsername(username);
-        if (findOne.getCompany() != null && findOne.getCompany().getId().equals(currentUser.getCompany().getId())) {
+        User theUser = userRepository.findByUsername(username);
+        if (theUser.getCompany() != null && theUser.getCompany().getId().equals(currentUser.getCompany().getId())) {
             throw new FailResponse(ExceptionEnum.COMPANY_ALREADY_EXIST_EMPLOYEE);
         }
-        if("ROLE_ADMIN".equals(findOne.getRole().getName())){
+        if (Role.defaultRole.ADMIN.getName().equals(theUser.getRole().getName())) {
             throw new FailResponse(ExceptionEnum.ADMIN_CANNOT_JOININ_COMPANY);
+        }
+        if (Role.defaultRole.MANAGER.getName().equals(theUser.getRole().getName())) {
+            throw new FailResponse(ExceptionEnum.MANAGER_CANNOT_JOININ_COMPANY);
         }
         if (!smsService.checkSms(username, sms)) {
             throw new FailResponse(ExceptionEnum.SMS_ERROR);
         }
         Company company = currentUser.getCompany();
-        findOne.setCompany(company);
-        findOne.setJoinCompanyTime(new Date());
-        Role role = new Role();
-        role.setId(4);
-        role.setName("ROLE_EMPLOYEE");
-        findOne.setRole(role);
-        userRepository.save(findOne);
+        theUser.setCompany(company);
+        theUser.setJoinCompanyTime(new Date());
+        Role role = roleRepository.findByName(Role.defaultRole.EMPLOYEE.getName());
+        theUser.setRole(role);
+        userRepository.save(theUser);
         return new ResponseBody();
 
     }
@@ -322,9 +326,7 @@ public class CompanyController {
         Company company = currentUser.getCompany();
         user.setJoinCompanyTime(new Date());
         user.setCompany(company);
-        Role role = new Role();
-        role.setId(4);
-        role.setName("ROLE_EMPLOYEE");
+        Role role = roleRepository.findByName(Role.defaultRole.EMPLOYEE.getName());
         user.setRole(role);
         userRepository.save(user);
         return new ResponseBody();
@@ -419,9 +421,9 @@ public class CompanyController {
         if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
-        Integer id= currentUser.getUser().getId();
+        Integer id = currentUser.getUser().getId();
         Company company = currentUser.getCompany();
-        List<User> teamMemberList = userRepository.findByCompanyAndIdNot(company,id);
+        List<User> teamMemberList = userRepository.findByCompanyAndIdNotOrderByRole(company, id);
         List<Map<String, Object>> returnList = new ArrayList<>();
         for (User user : teamMemberList) {
             Map<String, Object> returnMap = new HashMap<>();
@@ -456,9 +458,7 @@ public class CompanyController {
         }
         User manager = currentUser.getUser();
         Role managerRole = manager.getRole();
-        Role employeeRole = new Role();
-        employeeRole.setId(4);
-        employeeRole.setName("ROLE_EMPLOYEE");
+        Role employeeRole = roleRepository.findByName(Role.defaultRole.EMPLOYEE.getName());
         manager.setRole(employeeRole);
         user.setRole(managerRole);
         company.setManager(user);
@@ -473,7 +473,7 @@ public class CompanyController {
      */
     @RequestMapping(value = "/employeesList", method = RequestMethod.GET)
     @PreAuthorize("hasRole('MANAGER') or hasRole('EMPLOYEE') or hasRole('LEADER')")
-    public ResponseBody emplyeesListAndSearch(String name,String mobile,@PageableDefault(sort = {"role"}, direction = Sort.Direction.ASC) Pageable page) {
+    public ResponseBody emplyeesListAndSearch(String name, String mobile, @PageableDefault(sort = {"role"}, direction = Sort.Direction.ASC) Pageable page) {
         Common.UserDetailsImpl currentUser = Common.getPrincipal();
         if (currentUser == null) {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
@@ -483,7 +483,7 @@ public class CompanyController {
             throw new FailResponse(ExceptionEnum.HAVE_NOT_COMPANY);
         }
         Map<String, Object> returnMap = new HashMap<>();
-        Page<User> employeePage = userService.emplyeesListAndSearch(company,name,mobile,page);
+        Page<User> employeePage = userService.emplyeesListAndSearch(company, name, mobile, page);
         List<EmployeeVO> employeeList = new ArrayList<>();
         for (User employee : employeePage.getContent()) {
             EmployeeVO employeeVO = new EmployeeVO(employee, personReportRepository);
@@ -519,9 +519,7 @@ public class CompanyController {
         User user = userRepository.findOne(id);
         Set<User> employees = company.getEmployees();
         employees.remove(user);
-        Role role = new Role();
-        role.setId(5);
-        role.setName("ROLE_USER");
+        Role role = roleRepository.findByName(Role.defaultRole.USER.getName());
         user.setCompany(null);
         user.setRole(role);
         userRepository.save(user);
@@ -544,22 +542,22 @@ public class CompanyController {
         }
         company = companyRepository.findOne(currentUser.getCompany().getId());
         List<Map<String, Object>> returnList = new ArrayList<>();
-        List<CompanyVerification> companyVerifications = companyVerificationRepository.findByCompanyAndApplyType(company,ApplyTypeEnum.EDITIONUPGREADE);
+        List<CompanyVerification> companyVerifications = companyVerificationRepository.findByCompanyAndApplyType(company, ApplyTypeEnum.EDITIONUPGREADE);
         Set<SystemEditionEnum> openEditions = company.getOpenEditions();
         for (SystemEditionEnum systemEditionEnum : SystemEditionEnum.values()) {
             Map<String, Object> returnMap = new HashMap<>();
-            if(openEditions.contains(systemEditionEnum)) {
+            if (openEditions.contains(systemEditionEnum)) {
                 returnMap.put("color", "#000000");
                 returnMap.put("Edition", systemEditionEnum.getMessage());
                 returnMap.put("status", "查询");
                 returnList.add(returnMap);
-            } else if (companyVerifications.stream().anyMatch(item-> ApplyTypeEnum.EDITIONUPGREADE.equals(item.getApplyType())&&item.getVerifyTime() == null && item.getApplyInfo().contains(systemEditionEnum.toString()))) {
+            } else if (companyVerifications.stream().anyMatch(item -> ApplyTypeEnum.EDITIONUPGREADE.equals(item.getApplyType()) && item.getVerifyTime() == null && item.getApplyInfo().contains(systemEditionEnum.toString()))) {
                 returnMap.put("color", "#FF4500");
                 returnMap.put("Edition", systemEditionEnum.getMessage());
                 returnMap.put("status", "审核中");
                 returnList.add(returnMap);
             } else {
-                returnMap.put("color","#60AEFC");
+                returnMap.put("color", "#60AEFC");
                 returnMap.put("Edition", systemEditionEnum.getMessage());
                 returnMap.put("status", "申请");
                 returnList.add(returnMap);
@@ -582,7 +580,7 @@ public class CompanyController {
         if (company == null) {
             throw new FailResponse(ExceptionEnum.HAVE_NOT_COMPANY);
         }
-        Page<CompanyRemainderLog> companyRemainderLogPage = companyRemainderLogRepository.findByCompanyAndStatusOrderByIdDesc(company,ChargeStatusEnum.TRADE_SUCCESS,page);
+        Page<CompanyRemainderLog> companyRemainderLogPage = companyRemainderLogRepository.findByCompanyAndStatusOrderByIdDesc(company, ChargeStatusEnum.TRADE_SUCCESS, page);
         Map<String, Object> returnMap = new HashMap<>();
         List<CompanyRemainderLogVO> companyRemainderLogVOS = new ArrayList<>();
         for (CompanyRemainderLog companyRemainderLog : companyRemainderLogPage.getContent()) {
@@ -652,8 +650,19 @@ public class CompanyController {
             throw new FailResponse(ExceptionEnum.NOT_LOGGED_IN);
         }
         Company company = currentUser.getCompany();
-        Page<CompanyRemainderLog> findByCompany = companyRemainderLogRepository.findByCompanyAndStatusNotOrderByIdDesc(company, ChargeStatusEnum.WAIT_BUYER_PAY, page);
-        return new ResponseBody(findByCompany);
+        Page<CompanyRemainderLog> companyRemainderLogPage = companyRemainderLogRepository.findByCompanyAndStatusNotOrderByIdDesc(company, ChargeStatusEnum.WAIT_BUYER_PAY, page);
+        Map<String, Object> returnMap = new HashMap<>();
+        List<CompanyRemainderLogVO> companyRemainderLogVOS = new ArrayList<>();
+        for (CompanyRemainderLog companyRemainderLog : companyRemainderLogPage.getContent()) {
+            CompanyRemainderLogVO companyRemainderLogVO = new CompanyRemainderLogVO(companyRemainderLog);
+            companyRemainderLogVOS.add(companyRemainderLogVO);
+        }
+        returnMap.put("content", companyRemainderLogVOS);
+        returnMap.put("number", companyRemainderLogPage.getNumber());
+        returnMap.put("totalPages", companyRemainderLogPage.getTotalPages());
+        returnMap.put("totalElements", companyRemainderLogPage.getTotalElements());
+        returnMap.put("size", companyRemainderLogPage.getSize());
+        return new ResponseBody(returnMap);
     }
 
     private void companyVerifyStatusCheck(Company userCompany) {

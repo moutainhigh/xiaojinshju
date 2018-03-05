@@ -82,100 +82,106 @@
             
             
             <div class="body_wrap" ng-controller="registerCtrl">
-                <br />
-                <br />
-                <br />
-                <br />
-
-                <table width="100%">
-                    <tr>
-                        <td width="20%">
-                            &nbsp;
-                        </td>
-                        <td width="100%" style="vertical-align: top;">
-                            <div style="font-size: 18px;">新用户注册</div>
-                            <br />
-                                 
-                            <form class="form-horizontal">
-                                 <div class="form-group">
-                                    <label class="col-lg-2 control-label">姓名</label>
-                                    <div class="col-lg-5">
-                                        <input class="form-control" name="nickname" ng-model="personPredata.nickname" placeholder="请输入姓名" type="text">
-                                    </div>
-                                     <div class="col-lg-5 rightLabel" style="margin-left: -25px;">
-                                          <span class="text-danger" ng-show="personPredata.nickname.length <2 && personPredata.nickname.length > 0"><i class="fa fa-ban"></i> 姓名至少两个字以上</span>
-                                        <span class="text-success" ng-show="personPredata.nickname.length > 1"><i class="fa fa-check"></i> 格式正确</span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-lg-2 control-label">手机号码</label>
-                                    <div class="col-lg-5">
-                                        <input class="form-control" ng-model="personPredata.username" placeholder="请输入11位手机号" type="text" ng-change="isPhone(personPredata.username)">
-                                    </div>
-                                     <div class="col-lg-5 rightLabel" style="margin-left: -25px;">
-                                        <span class="{{phoneJudge.phoneClass}}" ng-if="personPredata.username.length>0"><i class="{{phoneJudge.iconClass}}"></i> {{phoneJudge.message}}</span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-lg-2 control-label">验证码</label>
-                                    <div class="col-lg-3">
-                                        <input class="form-control" id="smsInput" name="imgsms" ng-model="personPredata.imgsms" placeholder="验证码区分大小写" type="text">
-                                    </div>
-                                    <div class="col-lg-3">
-                                        <img src="data:image/png;base64,{{imgSMS.image}}" ng-click="getCode()">
-                                        <a ng-click="getCode()" style ="text-decoration: underline;color:rgb(126,195,235)">看不清图？换张图片</a>
-                                    </div>
-                                    <div class="col-lg-2 rightLabel" style="margin-left: -25px;">
-                                        <span class="text-success " ng-show="personPredata.imgsms && (personPredata.imgsms === imgSMS.code)"><i class="fa fa-check"></i> 验证码正确</span>
-                                        <span class="text-danger" ng-show="personPredata.imgsms && (personPredata.imgsms !== imgSMS.code)"><i class="fa fa-check"></i> 验证码错误</span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-lg-2 control-label">短信验证码</label>
-                                    <div class="col-lg-3">
-                                        <input class="form-control" name="sms" ng-model="personPredata.sms"  placeholder="请输入有效验证码" type="text">
-                                    </div>
-                                    <div class="col-lg-5">
-                                        <button  class="btn btn-default" ng-hide="personSendSMSPending" ng-click="personSms()">获取短信验证码</button>
-                                        <button  class="btn btn-default disabled" ng-show="personSendSMSPending">{{personSendSMSText}}</button>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-lg-2 control-label">登录密码</label>
-                                    <div class="col-lg-5">
-                                        <input class="form-control" name="password1"  ng-model="personPredata.password1"  placeholder="请设置密码" type="password">
-                                    </div>
-                                    <div class="col-lg-5 rightLabel" style="margin-left: -25px;">
-                                        <span class="text-danger" ng-show="personPredata.password1.length <6 && personPredata.password1.length > 0"><i class="fa fa-ban"></i>密码不得少于6位</span>
-                                        <span class="text-success" ng-show="personPredata.password1.length >5"><i class="fa fa-check"></i> 格式正确</span>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-lg-2 control-label">确认密码</label>
-                                    <div class="col-lg-5">
-                                        <input class="form-control" name="password2"  placeholder="请确认密码"ng-model="personPredata.password2"   type="password">
-                                    </div>
-                                     <div class="col-lg-5 rightLabel" style="margin-left: -25px;">
-                                        <span class="text-success " ng-show="personPredata.password1.length >5 && personPredata.password1 == personPredata.password2"><i class="fa fa-check"></i> 密码相同</span>
-                                        <span class="text-danger" ng-show="personPredata.password1.length >5 && personPredata.password1 != personPredata.password2"><i class="fa fa-check"></i> 密码不同</span>
-                                    </div>
+                <div class="warp_content">
+                    <table width="100%">
+                        <tr>
+                            <td width="100%" style="vertical-align: top;">
+                                <div class="auth_title_warp" style="width: 140px">
+                                    <img src="/fengkongweishi/images/Authentication.png" height="30" width="26"/>
+                                    <div class="auth_title">新用户注册</div>
                                 </div>
 
-                                  <div class="form-group">
-                                    <label class="col-lg-2 control-label"></label>
-                                    <div class="col-lg-6">
-                                        &nbsp;
+                                <div class="vbox">
+                                    <div class="row-row">
+                                        <div class="cell">
+                                            <div class="cell-inner" style="overflow: visible">
+                                                <form class="form-horizontal valid-form" style="width: 600px; margin: 0 auto">
+                                                    <div class="valid-form-item" style="left: 213px">
+                                                        <div>
+                                                            <span class="text-danger" ng-show="personPredata.nickname.length <2 && personPredata.nickname.length > 0"><i class="fa fa-ban"></i> 姓名至少两个字以上</span>
+                                                            <!--<span class="text-success" ng-show="personPredata.nickname.length > 1"><i class="fa fa-check"></i> 格式正确</span>-->
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-danger" ng-show="personPredata.username.length != 11 && personPredata.username.length > 0"><i class="fa fa-ban"></i> 11位手机号</span>
+                                                            <!--<span class="text-success" ng-show="preData.mobile.length == 11"><i class="fa fa-check"></i> 11位手机号</span>-->
+                                                            <!--<span class="{{phoneJudge.phoneClass}}" ng-if="personPredata.username.length>0">-->
+                                                                <!--<i class="{{phoneJudge.iconClass}}"></i> -->
+                                                                <!--{{phoneJudge.message}}-->
+                                                            <!--</span>-->
+                                                        </div>
+                                                        <div>
+                                                            <!--<span class="text-success " ng-show="personPredata.imgsms && (personPredata.imgsms === imgSMS.code)"><i class="fa fa-check"></i> 验证码正确</span>-->
+                                                            <span class="text-danger" ng-show="personPredata.imgsms && (personPredata.imgsms !== imgSMS.code)"><i class="fa fa-check"></i> 验证码错误</span>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-danger" ng-show="personPredata.password1.length <6 && personPredata.password1.length > 0"><i class="fa fa-ban"></i>密码不得少于6位</span>
+                                                            <!--<span class="text-success" ng-show="personPredata.password1.length >5"><i class="fa fa-check"></i> 格式正确</span>-->
+                                                        </div>
+                                                        <div>
+                                                            <!--<span class="text-success " ng-show="personPredata.password1.length >5 && personPredata.password1 == personPredata.password2"><i class="fa fa-check"></i> 密码相同</span>-->
+                                                            <span class="text-danger" ng-show="personPredata.password1.length >5 && personPredata.password1 != personPredata.password2"><i class="fa fa-check"></i> 2次密码一致</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-lg-4 control-label">姓名</label>
+                                                        <div class="col-lg-6">
+                                                            <input class="form-control" name="nickname" ng-model="personPredata.nickname" placeholder="请输入姓名" type="text">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-lg-4 control-label">手机号码</label>
+                                                        <div class="col-lg-6">
+                                                            <input class="form-control" ng-model="personPredata.username" placeholder="请输入11位手机号" type="text" ng-change="isPhone(personPredata.username)">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-lg-4 control-label">验证码</label>
+                                                        <div class="col-lg-3">
+                                                            <input class="form-control" id="smsInput" name="imgsms" ng-model="personPredata.imgsms" placeholder="验证码区分大小写" type="text">
+                                                        </div>
+                                                        <div class="col-lg-4">
+                                                            <img style="height: 34px;width: 127px" src="data:image/png;base64,{{imgSMS.image}}" ng-click="getCode()">
+                                                            <!--<a ng-click="getCode()" style ="text-decoration: underline;color:rgb(126,195,235)">看不清图？换张图片</a>-->
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-lg-4 control-label">短信验证码</label>
+                                                        <div class="col-lg-3">
+                                                            <input class="form-control" name="sms" ng-model="personPredata.sms"  placeholder="请输入有效验证码" type="text">
+                                                        </div>
+                                                        <div class="col-lg-5">
+                                                            <button style="width: 128px"  class="btn btn-default" ng-hide="personSendSMSPending" ng-click="personSms()">获取短信验证码</button>
+                                                            <button style="width: 128px" class="btn btn-default disabled" ng-show="personSendSMSPending">{{personSendSMSText}}</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-lg-4 control-label">登录密码</label>
+                                                        <div class="col-lg-6">
+                                                            <input class="form-control" name="password1"  ng-model="personPredata.password1"  placeholder="请设置密码" type="password">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="col-lg-4 control-label">确认密码</label>
+                                                        <div class="col-lg-6">
+                                                            <input class="form-control" name="password2"  placeholder="请确认密码"ng-model="personPredata.password2"   type="password">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div class="col-lg-offset-4 col-lg-6">
+                                                            <button  ng-click="personSubmit()" style="width: 100%;background: #4777B6;border: 1px solid #4777b6;" class="btn btn-success" >注册个人</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                      <div class="col-lg-offset-4 col-lg-10">
-                                          <button  ng-click="personSubmit()" class="btn btn-sm btn-success" >注册个人</button>
-                                      </div>
-                                </div>
-                          </form>
-                        </td>
-                    </tr>
-                </table>
+
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
                 <div class="footer_wrap">
                     <div class="pull-right">
                         杭州商道科技有限公司 &nbsp;

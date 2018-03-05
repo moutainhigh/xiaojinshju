@@ -37,7 +37,7 @@
                 for (var key in $scope.car) {
                     if ($scope.car[key] === "") {
                         console.log($scope.car[key]);
-                        alert("请完善所填信息");
+                        $rootScope.infoBox("请完善所填信息");
                         return 0;
                     }
                 }
@@ -55,16 +55,15 @@
                     }).then(function (result) {
                         if (result.data.status === "success") {
                             if ($scope.edition === "PERSONMOBILE" || $scope.edition === "PERSONSENIOR") {
-//                                $state.go('carrier', {
-//                                    reportId: $scope.id,
-//                                    edition: $scope.edition,
-//                                    username: $scope.username,
-//                                    phone: $scope.phone,
-//                                    idCard: $scope.idCard,
-//                                    appCode: $scope.appCode,
-//                                    searFlag:$stateParams.searFlag
-//                                });
-                                window.location.href = "https://api.51datakey.com/h5/importV3/index.html#/carrier?apiKey=6ff50306859441f1b977a3e203dbe5c7&userId="+$scope.id+"&backUrl=localhost:8080/#/search_detail/"+$scope.id
+                                $state.go('carrier', {
+                                    reportId: $scope.id,
+                                    edition: $scope.edition,
+                                    username: $scope.username,
+                                    phone: $scope.phone,
+                                    idCard: $scope.idCard,
+                                    appCode: $scope.appCode,
+                                    searFlag:$stateParams.searFlag
+                                });
                             } else if ($scope.edition === "PERSONECOMMERCE") {
                                 $state.go('taobao', {
                                     reportId: $scope.id,
@@ -77,7 +76,7 @@
                                 });
                             }
                         } else {
-                            alert("查询失败");
+                            $rootScope.infoBox("查询失败");
                         }
                     })
                 }
@@ -85,17 +84,15 @@
 
             $scope.passStep = function () {
                 if ($scope.edition === "PERSONMOBILE" || $scope.edition === "PERSONSENIOR") {
-//                    $state.go('carrier', {
-//                        reportId: $scope.id,
-//                        edition: $scope.edition,
-//                        username: $scope.username,
-//                        phone: $scope.phone,
-//                        idCard: $scope.idCard,
-//                        appCode: $scope.appCode,
-//                        searFlag:$stateParams.searFlag
-//                    });
-                    window.location.href = "https://api.51datakey.com/h5/importV3/index.html#/carrier?apiKey=6ff50306859441f1b977a3e203dbe5c7&userId="+$scope.id+"&backUrl=localhost:8080/#/search_detail/"+$scope.id
-
+                    $state.go('carrier', {
+                        reportId: $scope.id,
+                        edition: $scope.edition,
+                        username: $scope.username,
+                        phone: $scope.phone,
+                        idCard: $scope.idCard,
+                        appCode: $scope.appCode,
+                        searFlag:$stateParams.searFlag
+                    });
                 } else if ($scope.edition === "PERSONECOMMERCE") {
                     $state.go('taobao', {
                         reportId: $scope.id,
@@ -113,7 +110,7 @@
                 for (var key in $scope.car) {
                     if ($scope.car[key] === "") {
                         console.log($scope.car[key]);
-                        alert("请完善所填信息");
+                        $rootScope.infoBox("请完善所填信息");
                         return 0;
                     }
                 }
@@ -133,7 +130,7 @@
                         if (result.data.status === "success") {
                             $state.go("search_detail", {id: $scope.id});
                         } else {
-                            alert("查询失败");
+                            $rootScope.infoBox("查询失败");
                         }
                     })
                 }
@@ -183,7 +180,7 @@
                         $scope.car.vin = result.data.data.vin;
                     }else {
                         $scope.loading = false;
-                        alert("车辆识别失败");
+                        $rootScope.infoBox("车辆识别失败");
                     }
                 })
             }
@@ -196,64 +193,55 @@
 
         }]);</script>
 <div class="body_wrap list_page" ng-controller="carSearchCtrl">
-    <div class="app-content-body" style="height:518px;">
+    <div class="warp_content" style="height:518px;">
         <div class="hbox hbox-auto-xs bg-white">
             <div class="col" style="width:65%">
-                <div style="margin: 50px 100px 40px 100px" ng-model="editionInfo">
-                    <div class="tabTitle">车辆违章查询</div>
+                <div class="auth_title_warp" ng-model="editionInfo" style="width: 160px">
+                    <img src="/fengkongweishi/images/Authentication.png" height="30" width="26"/>
+                    <div class="auth_title">车辆违章查询</div>
                 </div>
                 <div class="vbox">
                     <div class="row-row">
-                        <div class="cell scrollable hover">
-                            <div class="cell-inner wrapper-md">
+                        <div class="cell">
+                            <div class="cell-inner" style="overflow: visible">
                                 <form class="form-horizontal ng-pristine ng-valid ng-valid-date ng-valid-required ng-valid-date-disabled">
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">车辆类型</label>
-                                        <div class="col-sm-5">
-                                            <select class="form-control" name="carType" ng-model="car.carType">
-                                                <option value="" selected>请选择车辆类型</option>
-                                                <option value="01">大型车</option>
-                                                <option value="02">小型车</option>
-                                            </select>
-                                        </div>
+                                    <div class="input-group">
+                                        <label class=" control-label">车辆类型</label>
+                                        <select name="carType" ng-model="car.carType">
+                                            <option value="" selected>请选择车辆类型</option>
+                                            <option value="01">大型车</option>
+                                            <option value="02">小型车</option>
+                                        </select>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">车牌号</label>
-                                        <div class="col-sm-5">
-                                            <input class="form-control" type="text" ng-model="car.plateNumber" placeholder="请输入车牌号"/>
-                                        </div>
+                                    <div class="input-group">
+                                        <label class="control-label">车牌号</label>
+                                        <input type="text" ng-model="car.plateNumber" placeholder="请输入车牌号"/>
                                     </div>
 
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">发动机号</label>
-                                        <div class="col-sm-5">
-                                            <input class="form-control" type="text" ng-model="car.engineNo" placeholder="请输入发动机号"/>
-                                        </div>
+                                    <div class="input-group">
+                                        <label class=" control-label">发动机号</label>
+                                        <input type="text" ng-model="car.engineNo" placeholder="请输入发动机号"/>
                                     </div>
 
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">车架号</label>
-                                        <div class="col-sm-5">
-                                            <input class="form-control" type="text" ng-model="car.vin" placeholder="请输入车架号"/>
-                                        </div>
+                                    <div class="input-group">
+                                        <label class=" control-label">车架号</label>
+                                        <input type="text" ng-model="car.vin" placeholder="请输入车架号"/>
                                     </div>
                                     <div class="form-group">
-                                        <div class="col-sm-11" style="text-align: center;display: inline">
+                                        <div style="text-align: center;margin-left: 80px">
                                             <span ng-show="!loading">不想手工录入信息？试试<a class="underLine" ng-click="chooseClick()">车辆识别</a>吧~</span>
                                             <a ng-show="loading">正在识别<span class="dotting"></span></a>
                                         </div>
                                         <input type="file" id="chooseLicense" style="display: none"/>
                                     </div>
 
-                                    <div class="form-group" style="margin-top: 30px">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button class="layui-btn layui-btn-primary" ng-click="passStart()" ng-if="endStep">跳过并查询</button>
-                                            <button class="layui-btn" ng-click="next()" ng-if="!endStep">下一步</button>
-                                        </div>
-                                        <div class="col-sm-4">
-                                            <button class="layui-btn layui-btn-normal" ng-click="passStep()" ng-if="!endStep">跳过</button>
-                                            <button class="layui-btn layui-btn-normal" ng-click="start()" ng-if="endStep">开始查询</button>
+                                    <div class="input-btn-group" style="margin-top: 30px">
+                                        <label class="control-label"></label>
+                                        <button class="layui-btn" ng-click="next()" ng-if="!endStep">下一步</button>
+                                        <button class="layui-btn layui-btn-normal" ng-click="start()" ng-if="endStep">开始查询</button>
+                                        <div>
+                                            <p ng-click="passStart()" ng-if="endStep">跳过并查询></p>
+                                            <p ng-click="passStep()" ng-if="!endStep">跳过></p>
                                         </div>
                                     </div>
                                 </form>

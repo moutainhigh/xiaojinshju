@@ -55,7 +55,7 @@
                                 </a>
                             </td>
                             <td>
-                                <a ui-sref="employee_list" ng-if="myinfo.role.name == 'ROLE_MANAGER'">
+                                <a ui-sref="employee_list" ng-hide="myinfo.role.name !== 'ROLE_MANAGER'">
                                     <img src="images/menu_6.png" alt="person" width="45" /> 
                                 </a>
                             </td>
@@ -92,7 +92,7 @@
                                 </a>
                             </td>
                              <td>
-                                  <a ui-sref="employee_list" ng-if="myinfo.role.name == 'ROLE_MANAGER'">
+                                  <a ui-sref="employee_list" ng-hide="myinfo.role.name !== 'ROLE_MANAGER'">
                                     企业管理
                                 </a>
                             </td>
@@ -104,7 +104,7 @@
                     <br />
                     <br />
                     <br />
-                    {{myinfo.company ? myinfo.company.companyName : ""}}&nbsp;&nbsp;&nbsp;{{myinfo.username}}&nbsp;&nbsp;&nbsp;<a ui-sref="finance" ng-if="myinfo.role.name == 'ROLE_MANAGER'">费用&充值</a>&nbsp;&nbsp;&nbsp;<a href="/logout">退出</a>&nbsp;&nbsp;
+                    {{myinfo.company ? myinfo.company.companyName : ""}}&nbsp;&nbsp;&nbsp;{{myinfo.username}}&nbsp;&nbsp;&nbsp;<a ui-sref="employee_list" ng-if="myinfo.role.name == 'ROLE_MANAGER'">费用&充值</a>&nbsp;&nbsp;&nbsp;<a href="/logout">退出</a>&nbsp;&nbsp;
                 </div>
             </div>  
 

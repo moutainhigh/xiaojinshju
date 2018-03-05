@@ -23,9 +23,9 @@ public class CompanyRegister {
     private String address;
     @NotNull(message = "证件类型不能为空")
     private LicenseTypeEnum licenseType;
-    @NotBlank(message = "营业执照号码不能为空")
+    @NotBlank(message = "证件号码不能为空")
     private String licenseNumber;
-    @NotBlank(message = "营业执照图片不能为空")
+    @NotBlank(message = "证件图片不能为空")
     private String licensePicURL;
     @NotEmpty(message = "请至少选择一个版本")
     private Set<SystemEditionEnum> openEditions;

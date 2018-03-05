@@ -171,13 +171,11 @@ public class UserService implements UserDetailsService {
 
     public void roleUpdate(User user) {
         Role oldRole = user.getRole();
-        Role newRole = new Role();
-        if ("ROLE_LEADER".equals(oldRole.getName())) {
-            newRole.setId(4);
-            newRole.setName("ROLE_EMPLOYEE");
+        Role newRole;
+        if (Role.defaultRole.LEADER.getName().equals(oldRole.getName())) {
+            newRole = roleRepository.findByName(Role.defaultRole.EMPLOYEE.getName());
         } else {
-            newRole.setId(3);
-            newRole.setName("ROLE_LEADER");
+            newRole = roleRepository.findByName(Role.defaultRole.LEADER.getName());
         }
         user.setRole(newRole);
         userRepository.save(user);
@@ -196,10 +194,10 @@ public class UserService implements UserDetailsService {
         user.setPassword(MD5Util.encode(userRegister.getPassword1()));
 
         if (userRegister.getCompanyId() != null) {
-            user.setRole(roleRepository.findByName("ROLE_EMPLOYEE"));
+            user.setRole(roleRepository.findByName(Role.defaultRole.EMPLOYEE.getName()));
             user.setCompany(companyRepository.findOne(userRegister.getCompanyId()));
         } else {
-            user.setRole(roleRepository.findByName("ROLE_USER"));
+            user.setRole(roleRepository.findByName(Role.defaultRole.USER.getName()));
         }
 
         user.setUsername(userRegister.getUsername());

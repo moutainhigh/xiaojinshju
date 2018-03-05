@@ -18,7 +18,7 @@ public class CourtJudgmentPO extends BaseAnalyseItem {
      * 具体法院裁决
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "belongTo")
-    private Set<CourtJudgment> courtJudgments;
+    private Set<CourtJudgmentPOItem> courtJudgments;
 
     /**
      * 法院裁决风险分析数量
@@ -32,11 +32,11 @@ public class CourtJudgmentPO extends BaseAnalyseItem {
         super(color);
     }
 
-    public Set<CourtJudgment> getCourtJudgments() {
+    public Set<CourtJudgmentPOItem> getCourtJudgments() {
         return courtJudgments;
     }
 
-    public void setCourtJudgments(Set<CourtJudgment> courtJudgments) {
+    public void setCourtJudgments(Set<CourtJudgmentPOItem> courtJudgments) {
         this.courtJudgments = courtJudgments;
     }
 

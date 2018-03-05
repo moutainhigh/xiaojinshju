@@ -17,18 +17,18 @@
                 $scope.endStep = true;
             }
 
+            const localUrl = location.host;
+
             $scope.mobileData = {
                 phone: $scope.phone,
                 name: $scope.username,
                 idCard: $scope.idCard,
-                servicePassword: "",
                 linkman1Name:"",
                 linkman1Relationship:"",
                 linkman1Mobile:"",
                 linkman2Name:"",
                 linkman2Relationship:"",
-                linkman2Mobile:"",
-                moxieTaskCarrier:""
+                linkman2Mobile:""
             };
             //判断是否是重新查询
             if($stateParams.searFlag) {
@@ -46,33 +46,11 @@
             }
 
 
-            //创建task_id
-            $scope.getTaskId = function () {
-                var timestamp = (new Date()).valueOf();
-                $http({
-                    method: "POST",
-                    url: 'https://api.51datakey.com/carrier/v3/tasks?d=' + timestamp,
-                    headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"},
-                    data: {
-                        account: $scope.mobileData.phone,
-                        idCard: $scope.mobileData.idCard,
-                        name: $scope.mobileData.name,
-                        origin: "1",
-                        password: $scope.mobileData.servicePassword,
-                        user_id: "moxieTest"
-                    }
-                }).then(function (response) {
-                    $scope.mobileData.moxieTaskCarrier = response.data.task_id;
-                });
-            };
-
-
-
             $scope.next = function () {
                 for (var key in $scope.mobileData) {
                     if ($scope.mobileData[key] === "") {
                         console.log($scope.mobileData[key]);
-                        alert("请完善信息");
+                        $rootScope.infoBox("请完善信息");
                         return 0;
                     }
                 }
@@ -86,22 +64,30 @@
                     },
                     data: $scope.mobileData
                 }).then(function (result) {
-                    if (result.data.data.status === "success") {
+                    console.log(result);
+                    if (result.data.status === "success") {
                         if ($scope.edition === "PERSONSENIOR") {
-                            $state.go('taobao', {
-                                reportId: $scope.id,
-                                edition: $scope.edition,
-                                username: $scope.username,
-                                phone: $scope.phone,
-                                idCard: $scope.idCard,
-                                appCode:$scope.appCode,
-                                searFlag:$stateParams.searFlag
-                            });
+//                            $state.go('taobao', {
+//                                reportId: $scope.id,
+//                                edition: $scope.edition,
+//                                username: $scope.username,
+//                                phone: $scope.phone,
+//                                idCard: $scope.idCard,
+//                                appCode:$scope.appCode,
+//                                searFlag:$stateParams.searFlag
+//                            });
+                            var backUrl = "http://"+localUrl+"/#/taobao";
+                            backUrl = encodeURIComponent(backUrl);
+                            var parm = encodeURIComponent("{\"phone\":\""+ $scope.phone+"\",\"name\":\""+$scope.username+"\",\"idcard\":\""+$scope.idCard+"\"}");
+                            window.location.href = "http://118.31.239.203:9000/index.html#/carrier?apiKey=6ff50306859441f1b977a3e203dbe5c7&userId="+$scope.id+"&backUrl="+backUrl+"&loginParams="+parm;
                         } else if ($scope.edition === "PERSONMOBILE") {
-                            $state.go("search_detail",{id:$scope.id});
+                            var backUrl = "http://"+localUrl+"/#/search_detail/"+$scope.id;
+                            backUrl = encodeURIComponent(backUrl);
+                            window.location.href = "http://118.31.239.203:9000/index.html#/carrier?apiKey=6ff50306859441f1b977a3e203dbe5c7&userId="+$scope.id+"&backUrl="+backUrl;
+                            //+"&loginParams={\"phone\":\""+ $scope.phone+"\",\"name\":\""+$scope.username+"\",\"idcard\":\""+$scope.idCard+"\"}"
                         }
                     } else {
-                        alert("查询失败");
+                        $rootScope.infoBox(result.data.message);
                     }
                 })
             };
@@ -110,178 +96,18 @@
                 $state.go('taobao', {reportId: $scope.id,edition: $scope.edition,username:$scope.username,phone:$scope.phone,idCard:$scope.idCard,appCode:$scope.appCode,searFlag:$stateParams.searFlag});
             };
 
-            $scope.start = function () {
-                for (var key in $scope.mobileData) {
-                    if ($scope.mobileData[key] === "") {
-                        console.log($scope.mobileData[key]);
-                        alert("请完善信息");
-                        return 0;
-                    }
-                }
-                $scope.storeData();
-                $http({
-                    method: "POST",
-                    url: "/report/" + $scope.id + "/carrier",
-                    headers:{
-                        appCode: $scope.appCode,
-                        terminal: "WEB"
-                    },
-                    data: $scope.mobileData
-                }).then(function (result) {
-                    console.log(result);
-                    result = result.data;
-                    if (result.status === "success") {
-                        $scope.smsInt();
-                        $scope.uploadSms();
-                    } else {
-                        alert(result.message);
-                    }
-                })
-            };
 
             $scope.passStart = function () {
-                $scope.smsInt();
                 $state.go("search_detail",{id:$scope.id});
             };
 
-            $scope.smsInt = function () {
-                $scope.personSeconds = 60;
-                $scope.personSendSMSText = '获取验证码';
-                $scope.personSendSMSPending = false;//验证码发送中的状态，60秒后可重发
-                if($scope.circle){
-                    clearInterval($scope.circle);
-                }
-                if($scope.pwdCircle){
-                    clearInterval($scope.pwdCircle);
-                }
-            };
-            $scope.smsInt();
 
-
-            $scope.getSms = function () {
-                if ($scope.mobileData.servicePassword.length !== 6) {
-                    alert("请输入六位数服务密码");
-                    return 0;
-                }
-                if(!$scope.mobileData.moxieTaskCarrier){
-                    $http({
-                        method: "GET",
-                        url: "https://t.51datakey.com:18768/pt?biz=carrier&uid=moxietest&prv=/carrier_next-button&cur=/verification/_submit-button&ev=clk&vi=" + $rootScope.getDate(),
-                        headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"}
-                    }).then($scope.getTaskId())
-                }
-                $scope.personSendSMSPending = true;
-                $scope.circle = setInterval(function () {
-                    $scope.personSeconds--;
-                    $scope.personSendSMSText = $scope.personSeconds + '秒后可重新发送';
-                    $scope.getStatus();
-                    if ($scope.personSeconds === 0) {
-                        $scope.smsInt();
-                    }
-                    $scope.$apply();
-                }, 1000)
-            };
-
-            $scope.getStatus = function () {
-                    var timestamp = (new Date()).valueOf();
-                    $http({
-                        method: "GET",
-                        url: "https://api.51datakey.com/carrier/v3/tasks/" + $scope.mobileData.moxieTaskCarrier + "/status-sp?d=" + timestamp,
-                        headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"}
-                    }).then(function (result) {
-                        $scope.pwd = result.data.description;
-                        $scope.status = result.data.phase_status
-                    });
-
-            };
-
-            $scope.uploadSms = function () {
-                if ( $scope.status === 'WAIT_CODE') {
-                    $http({
-                        method: "POST",
-                        url: "https://api.51datakey.com/carrier/v3/tasks/" + $scope.mobileData.moxieTaskCarrier + "/input?d=" + timestamp,
-                        headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"},
-                        data: {input: $scope.mobileData.sms}
-                    }).then(function (result) {
-                        console.log(result);
-                        $scope.getStatus()
-//                        $state.go("search_detail", {id: result.data.reportId});
-                    })
-                }
-            };
-
-            $scope.phoneWhere = function () {
-                $http({
-                    method:"GET",
-                    url:"https://api.51datakey.com/conf/api/v2/carriers/"+$scope.mobileData.phone+"/findpwd",
-                    headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"}
-                }).then(function (result) {
-                    $scope.phoneInfo = result.data;
-                    console.log(result);
-                });
-                $scope.personSendSMSText = 60 + '秒后可重新发送';
-                $scope.changePwdSms();
-            };
-            $scope.changePwdSms = function () {
-                $http({
-                    method:"POST",
-                    url:"https://api.51datakey.com/carrier/v3/tasks/reset",
-                    headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"},
-                    data:{
-                        account:$scope.phone,
-                        id_card:$scope.idCard,
-                        real_name: $scope.username,
-                        user_id:"moxieTest"
-                    }
-                }).then(function (result) {
-                    $scope.changePwdmoxieTaskCarrier = result.data.task_id;
-                    $scope.pwdCircle = setInterval(function () {
-                        $scope.personSendSMSPending = true;
-                        $scope.personSeconds--;
-                        console.log($scope.personSeconds);
-                        $scope.personSendSMSText = $scope.personSeconds + '秒后可重新发送';
-                        if($scope.personSeconds===0){
-                            $scope.smsInt();
-                        }
-                        $scope.$apply();
-                    }, 1000)
-                });
-            };
-            $scope.changePwd ={};
-            $scope.changePwdNext = function () {
-                var timestamp = (new Date()).valueOf();
-                $http({
-                    method:"POST",
-                    url:"https://api.51datakey.com/carrier/v3/tasks/reset/"+$scope.changePwdmoxieTaskCarrier+"/input?d="+timestamp,
-                    headers: {Authorization: "apikey 6ff50306859441f1b977a3e203dbe5c7"},
-                    data:{
-                        inputs:[{
-                            type:"sms",value: $scope.changePwd.sms
-                        },{
-                            type:"pwd",value: $scope.changePwd.password
-                        }],
-                        type:"SUBMIT"
-                    }
-                }).then(function (result) {
-                    if(result.data.error_code){
-                        alert(result.data.description);
-                        $("change_service_pwd").modal('hide');
-                    }else{
-                        alert(result.data.description);
-                    }
-
-                });
-            };
-
-            //模态框清空
-            $("change_service_pwd").on('hide.bs.modal',function () {
-                $scope.smsInt();
-                $scope.changePwd={}
-            });
             $scope.storeData = function () {
                 sessionStorage.setItem('phone',$scope.mobileData.phone);
                 sessionStorage.setItem('username',$scope.mobileData.username);
                 sessionStorage.setItem('idCard',$scope.mobileData.idCard);
+                sessionStorage.setItem('reportId',$scope.id);
+                sessionStorage.setItem('appCode',$scope.appCode);
                 sessionStorage.setItem('linkman1Name',$scope.mobileData.linkman1Name);
                 sessionStorage.setItem('linkman1Relationship',$scope.mobileData.linkman1Relationship);
                 sessionStorage.setItem('linkman1Mobile',$scope.mobileData.linkman1Mobile);
@@ -292,11 +118,12 @@
 
         }]);</script>
 <div class="body_wrap list_page" ng-controller="carrierCtrl">
-    <div class="app-content-body" style="height:518px;">
+    <div class="warp_content" style="height:518px;">
         <div class="hbox hbox-auto-xs bg-white">
             <div class="col" style="width:65%">
-                <div style="margin: 50px 100px 40px 100px" ng-model="editionInfo">
-                    <div class="tabTitle">运营商认证</div>
+                <div class="auth_title_warp" ng-model="editionInfo" style="width: 160px">
+                    <img src="/fengkongweishi/images/Authentication.png" height="30" width="26"/>
+                    <div class="auth_title">运营商认证</div>
                 </div>
                 <div class="vbox">
                     <div class="row-row">
@@ -304,62 +131,8 @@
                             <div class="cell-inner wrapper-md">
                                 <form class="form-horizontal ng-pristine ng-valid ng-valid-date ng-valid-required ng-valid-date-disabled">
                                     <div class="form-group">
-                                        <label class="col-sm-3 control-label">手机号</label>
-                                        <div class="col-sm-5">
-                                            <input class="form-control" type="text" ng-model="mobileData.phone"
-                                                   disabled/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">姓名</label>
-                                        <div class="col-sm-5">
-                                            <input class="form-control" type="text" ng-model="mobileData.name"
-                                                   disabled/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">身份证号</label>
-                                        <div class="col-sm-5">
-                                            <input class="form-control" type="text" ng-model="mobileData.idCard"
-                                                   disabled/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">服务密码</label>
-                                        <div class="col-sm-5">
-                                            <input class="form-control" type="password" ng-model="mobileData.servicePassword"
-                                                   placeholder="请输入6位服务密码"/>
-                                        </div>
-                                        <div class="col-sm-4" style="margin-left: -25px;">
-                                            <span class="text-danger" ng-show="mobile.servicePassword.length >0 && mobile.servicePassword.length !== 6"><i
-                                                    class="fa fa-ban"></i> 格式错误</span>
-                                            <span class="text-success" ng-show="mobile.servicePassword.length >0 && mobile.servicePassword.length === 6"><i
-                                                    class="fa fa-check"></i> 格式正确</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">验证码</label>
-                                        <div class="col-sm-3">
-                                            <input class="form-control" type="text" id="smsCheck" ng-model="mobileData.sms"
-                                                   placeholder="请输入验证码"/>
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <button class="btn btn-default" ng-hide="personSendSMSPending"
-                                                    ng-click="getSms()">获取验证码
-                                            </button>
-                                            <button class="btn btn-default disabled" ng-show="personSendSMSPending">
-                                                {{personSendSMSText}}
-                                            </button>
-                                        </div>
-                                        <div>
-                                            <span class="text-danger" ng-show="pwd.length>0">{{pwd}}</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">联系人1</label>
-                                        <div class="col-sm-2">
+                                        <label class="col-sm-2 control-label">联系人1</label>
+                                        <div class="col-sm-2" style="width: 18%">
                                             <select class="form-control" name="linkman1" ng-model="mobileData.linkman1Relationship">
                                                 <option value="配偶" selected>配偶</option>
                                                 <option value="父母">父母</option>
@@ -367,153 +140,40 @@
                                                 <option value="子女">子女</option>
                                             </select>
                                         </div>
-                                        <div class="col-sm-2">
+                                        <div class="col-sm-3">
                                             <input class="form-control" type="text" ng-model="mobileData.linkman1Name" placeholder="姓名"/>
                                         </div>
-                                        <div class="col-sm-2">
+                                        <div class="col-sm-4">
                                             <input class="form-control" type="text" ng-model="mobileData.linkman1Mobile" placeholder="手机号"/>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="col-sm-3 control-label">联系人2</label>
-                                        <div class="col-sm-2">
+                                        <label class="col-sm-2 control-label">联系人2</label>
+                                        <div class="col-sm-2" style="width: 18%">
                                             <select class="form-control" name="linkman2" ng-model="mobileData.linkman2Relationship">
                                                 <option value="朋友" selected>朋友</option>
                                             </select>
                                         </div>
-                                        <div class="col-sm-2">
+                                        <div class="col-sm-3">
                                             <input class="form-control" type="text" ng-model="mobileData.linkman2Name" placeholder="姓名"/>
                                         </div>
-                                        <div class="col-sm-2">
+                                        <div class="col-sm-4">
                                             <input class="form-control" type="text" ng-model="mobileData.linkman2Mobile" placeholder="手机号"/>
                                         </div>
                                     </div>
-
-                                    <div class="form-group">
-                                        <div class="col-sm-11" style="text-align: center">
-                                            <span>忘记运营商服务密码？<a class="underLine" data-target="#change_service_pwd"
-                                                               data-toggle="modal" ng-click="phoneWhere()">点这里</a></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group" style="margin-top: 30px">
-                                        <label class="col-sm-3 control-label"></label>
-                                        <div class="col-sm-4">
-                                            <button class="layui-btn layui-btn-primary" ng-click="passStart()"
-                                                    ng-if="endStep">跳过并查询
-                                            </button>
-                                            <button class="layui-btn" ng-click="next()" ng-if="!endStep">下一步</button>
-                                        </div>
-                                        <div class="col-sm-4">
-                                            <button class="layui-btn layui-btn-normal" ng-click="passStep()"
-                                                    ng-if="!endStep">跳过
-                                            </button>
-                                            <button class="layui-btn layui-btn-normal" ng-click="start()"
-                                                    ng-if="endStep">开始查询
-                                            </button>
+                                    <div class="input-btn-group" style="margin-top:110px;padding: 0">
+                                        <label class=" control-label"></label>
+                                        <button class="layui-btn layui-btn-normal" ng-click="next()">下一步</button>
+                                        <div>
+                                            <p ng-if="endStep" ng-click="passStart()">跳过并查询></p>
+                                            <p ng-if="!endStep" ng-click="passStep()">跳过认证></p>
                                         </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--修改服务密码模态框-->
-    <div class="modal fade" id="change_service_pwd" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content" ng-if="!(phoneInfo.carrier === 'yd' && (phoneInfo.province === '北京' || phoneInfo.province === '湖北' || phoneInfo.province === '四川' || phoneInfo.province === '江西'))">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                    <h4 class="modal-title">服务密码修改</h4>
-                </div>
-                <div class="modal-body contentFont">
-                    <form class="form-horizontal">
-                        <div class="form-group">
-                            <label class="col-lg-3 control-label">手机号</label>
-                            <div class="col-sm-5">
-                                <input class="form-control" type="text" ng-model="mobileData.phone"
-                                       disabled/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-lg-3 control-label">身份证号</label>
-                            <div class="col-sm-5">
-                                <input class="form-control" type="text" ng-model="mobileData.idCard"
-                                       disabled/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">真实姓名</label>
-                            <div class="col-sm-5">
-                                <input class="form-control" type="text" ng-model="mobileData.name"
-                                       disabled/>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="col-lg-3 control-label">短信验证码</label>
-                            <div class="col-sm-3">
-                                <input class="form-control" ng-model="changePwd.sms" type="text">
-                            </div>
-                            <div class="col-sm-3" style="margin-left: -25px;">
-                                <button class="btn btn-default" ng-hide="personSendSMSPending"
-                                        ng-click="changePwdSms()">获取验证码
-                                </button>
-                                <button class="btn btn-default disabled" ng-show="personSendSMSPending">
-                                    {{personSendSMSText}}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">新服务密码</label>
-                            <div class="col-sm-5">
-                                <input class="form-control" ng-model="changePwd.password" type="password">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="layui-btn layui-btn-normal" style="text-align: center"
-                            ng-click="changePwdNext()">确定
-                    </button>
-                </div>
-            </div>
-            <div class="modal-content" ng-if="phoneInfo.carrier === 'yd' && (phoneInfo.province === '北京' || phoneInfo.province === '湖北' || phoneInfo.province === '四川' || phoneInfo.province === '江西')">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                    <h4 class="modal-title">服务密码修改</h4>
-                </div>
-                <div class="modal-body contentFont">
-                    <form class="form-horizontal">
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">方式一</label>
-                            <label class="col-sm-6 control-label" style="text-align: left">发送短信“MMCZ空格证件号码空格新密码空格新密码”至10086<i class="underLine">（推荐）</i></label>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">方式二</label>
-                            <label class="col-sm-6 control-label" style="text-align: left">请拨打10086</label>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">方式三</label>
-                            <label class="col-sm-6 control-label" style="text-align: left">可通过如下途径重置：1.网上营业厅 2.掌上营业厅 3.当地移动营业厅</label>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label">方式四</label>
-                            <label class="col-sm-6 control-label" style="text-align: left">进入移动官网找回密码</label>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="layui-btn layui-btn-normal" style="text-align: center" data-dismiss="modal">确定</button>
                 </div>
             </div>
         </div>

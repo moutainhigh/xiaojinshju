@@ -1,5 +1,6 @@
 package fengkongweishi.controller;
 
+import fengkongweishi.entity.role.Role;
 import fengkongweishi.util.Common;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,7 +15,7 @@ public class HomeController {
 
         System.out.println(Common.getPrincipal());
 
-        if ("ROLE_ADMIN".equals(Common.getPrincipal().getRole().getName())) {
+        if (Role.defaultRole.ADMIN.getName().equals(Common.getPrincipal().getRole().getName())) {
             return "index";
             //return "redirect:admin/index.html";
 //		 }else	if(Common.getPrincipal().getRole().getName().equals("ROLE_EMPLOYEE")){

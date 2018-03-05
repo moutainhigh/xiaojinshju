@@ -1,0 +1,213 @@
+package fengkongweishi.service;
+
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.internal.util.StringUtils;
+import com.alipay.api.request.AlipayTradePagePayRequest;
+import fengkongweishi.entity.company.Company;
+import fengkongweishi.entity.company.CompanyRepository;
+import fengkongweishi.entity.role.Role;
+import fengkongweishi.entity.role.RoleRepository;
+import fengkongweishi.entity.user.User;
+import fengkongweishi.entity.user.UserRegister;
+import fengkongweishi.entity.user.UserRepository;
+import fengkongweishi.entity.userremainderlog.UserRemainderLog;
+import fengkongweishi.entity.userremainderlog.UserRemainderLogRepository;
+import fengkongweishi.enums.*;
+import fengkongweishi.util.Common;
+import fengkongweishi.util.FailResponse;
+import fengkongweishi.util.MD5Util;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Service
+public class UserService implements UserDetailsService {
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    UserRemainderLogRepository userRemainderLogRepository;
+    @Autowired
+    RoleRepository roleRepository;
+    @Autowired
+    CompanyRepository companyRepository;
+    @Value("${alipay.url}")
+    private String url;
+    @Value("${alipay.appId}")
+    private String appId;
+    @Value("${alipay.appPrivateKey}")
+    private String appPrivateKey;
+    @Value("${alipay.format}")
+    private String format;
+    @Value("${alipay.charset}")
+    private String charset;
+    @Value("${alipay.alipayPublicKey}")
+    private String alipayPublicKey;
+    @Value("${alipay.signType}")
+    private String signType;
+    @Value("${alipay.returnUrl}")
+    private String returnUrl;
+    @Value("${alipay.notifyUrl}")
+    private String notifyUrl;
+
+    @Autowired
+    SmsService smsService;
+
+    @Autowired
+    private RedisCacheManager cacheManager;
+
+
+    @Override
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(s);
+        if (user == null) {
+            throw new UsernameNotFoundException("用户名不存在");
+        }
+        System.out.println("username:" + user.getUsername() + ";password:" + user.getPassword());
+        return new Common.UserDetailsImpl(user);
+    }
+
+    public void consume(User user, Integer value, PaymentChannelEnum channel, Integer id) {
+        user.withdraw(value);
+        userRepository.save(user);
+        UserRemainderLog userRemainderLog = new UserRemainderLog();
+        userRemainderLog.setByUser(Common.getPrincipal().getUser());
+        userRemainderLog.setUser(user);
+        userRemainderLog.setChannel(channel);
+        userRemainderLog.setCreateTime(new Date());
+        userRemainderLog.setType(ChargeTypeEnum.WITHDRAW);
+        userRemainderLog.setValue(value);
+        userRemainderLog.setEntityId(id);
+        userRemainderLogRepository.save(userRemainderLog);
+
+    }
+
+    @Transactional
+    public String taobaoDeposit(Integer amount) {
+
+        User user = Common.getPrincipal().getUser();
+        DefaultAlipayClient alipayClient = new DefaultAlipayClient(url, appId, appPrivateKey, format, charset,
+                alipayPublicKey, signType);
+        AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();// 创建API对应的request
+        Integer id = indirectDeposit(user, amount, PaymentChannelEnum.FRONTEND, PlatformEnum.ALIPAY);
+
+        alipayRequest.setReturnUrl(returnUrl);
+        alipayRequest.setNotifyUrl(notifyUrl);// 在公共参数中设置回跳和通知地址
+        alipayRequest.setBizContent("{" + "    \"out_trade_no\":\"user_" + id + "\","
+                + "    \"product_code\":\"FAST_INSTANT_TRADE_PAY\"," + "    \"total_amount\":" + amount + ","
+                + "    \"subject\":\"deposit\"," + "    \"body\":\"user deposit\""
+
+                + "  }");// 填充业务参数
+        String form = "";
+        try {
+            form = alipayClient.pageExecute(alipayRequest).getBody(); // 调用SDK生成表单
+
+            return form;
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+        }
+        throw new FailResponse(6511, "生成支付宝支付页错误");
+    }
+
+    @Transactional
+    public Integer indirectDeposit(User user, Integer amount, PaymentChannelEnum channel, PlatformEnum platform) {
+        if (amount == null) {
+            throw new FailResponse(9111, "充值金额不能空");
+        }
+
+        UserRemainderLog userRemainderLog = new UserRemainderLog();
+        userRemainderLog.setByUser(Common.getPrincipal().getUser());
+        userRemainderLog.setUser(user);
+        userRemainderLog.setChannel(channel);
+        userRemainderLog.setCreateTime(new Date());
+        userRemainderLog.setType(ChargeTypeEnum.DEPOSIT);
+        userRemainderLog.setRealValue(amount);
+        userRemainderLog.setValue(amount);
+        userRemainderLog.setPlatform(platform);
+        userRemainderLog.setStatus(ChargeStatusEnum.WAIT_BUYER_PAY);
+        UserRemainderLog save = userRemainderLogRepository.save(userRemainderLog);
+        return save.getId();
+    }
+
+    public Page<User> emplyeesListAndSearch(Company company, String name, String mobile, Pageable page) {
+        Page<User> userPage = userRepository.findAll(new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                List<Predicate> predicateList = new ArrayList<>();
+                if (company != null) {
+                    Predicate comEqual = cb.equal(root.get("company"), company);
+                    predicateList.add(comEqual);
+                }
+                if (!StringUtils.isEmpty(name)) {
+                    Predicate nameEqual = cb.equal(root.get("nickname"), name);
+                    predicateList.add(nameEqual);
+                }
+                if (!StringUtils.isEmpty(mobile)) {
+                    Predicate mobileEq = cb.equal(root.get("username"), mobile);
+                    predicateList.add(mobileEq);
+                }
+                query.where(predicateList.toArray(new Predicate[predicateList.size()]));
+                return null;
+            }
+        }, page);
+        return userPage;
+    }
+
+    public void roleUpdate(User user) {
+        Role oldRole = user.getRole();
+        Role newRole;
+        if (Role.defaultRole.LEADER.getName().equals(oldRole.getName())) {
+            newRole = roleRepository.findByName(Role.defaultRole.EMPLOYEE.getName());
+        } else {
+            newRole = roleRepository.findByName(Role.defaultRole.LEADER.getName());
+        }
+        user.setRole(newRole);
+        userRepository.save(user);
+    }
+
+    public User register(UserRegister userRegister) {
+        if (!userRegister.getPassword1().equals(userRegister.getPassword2())) {
+            throw new FailResponse(5419, "两个密码不一致");
+        }
+        if (!smsService.checkSms(userRegister.getUsername(), userRegister.getSms())) {
+            throw new FailResponse(ExceptionEnum.SMS_ERROR);
+        }
+        User user = new User();
+        user.setCreateTime(new Date());
+        user.setEnabled(true);
+        user.setPassword(MD5Util.encode(userRegister.getPassword1()));
+
+        if (userRegister.getCompanyId() != null) {
+            user.setRole(roleRepository.findByName(Role.defaultRole.EMPLOYEE.getName()));
+            user.setCompany(companyRepository.findOne(userRegister.getCompanyId()));
+        } else {
+            user.setRole(roleRepository.findByName(Role.defaultRole.USER.getName()));
+        }
+
+        user.setUsername(userRegister.getUsername());
+        user.setNickname(userRegister.getNickname());
+
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new FailResponse(3864, "手机号已经存在");
+        }
+        return user;
+    }
+}

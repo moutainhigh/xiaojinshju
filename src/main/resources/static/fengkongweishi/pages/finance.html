@@ -64,7 +64,7 @@
                         console.log(response.data);
                         var resResult = response.data;
                         if (typeof resResult.status != 'undefined' && resResult.status == 'fail') {
-                                alert(resResult.msg);
+                            $rootScope.infoBox(resResult.msg);
                         } else {
                             jQuery("#alipay_return").html(response.data);
                         }

@@ -1,0 +1,381 @@
+<script>
+    "use strict";
+    app.controller("managementCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$timeout',
+        function ($scope, $http, $rootScope, $state, $timeout) {
+            $scope.listType = "company";
+            $scope.companyList = [];
+            $scope.logList = [];
+            $scope.showContent = 'notShow';
+            $scope.companyFlag = $scope.logFlag =false;
+
+
+
+            $scope.getCompanyList = function(size,page){
+                $http({
+                    method:'GET',
+                    url:'/admin/company/list?size='+size+'&page=' + page
+                }).then(function (resResult) {
+                    resResult = resResult.data;
+                    $scope.companyList = resResult.data.companyList;
+                    if(!$scope.companyFlag){
+                        //设置分页参数
+                        layui.use(['laypage', 'layer'], function(){
+                            var laypage = layui.laypage;
+                            laypage.render({
+                                elem: 'companyTable'
+                                ,count: resResult.data.totalElements
+                                ,theme:"#4777B6"
+                                ,limit: 6
+                                ,limits:[5,6,7]
+                                , layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                                ,jump: function(obj,first){
+                                    if(!first){
+                                        $scope.getCompanyList(obj.limit,obj.curr-1);
+                                    }
+                                }
+                            });
+                        });
+                        $scope.companyFlag = true;
+                    }
+                });
+            };
+            $scope.getCompanyList(6,0);
+
+
+            $scope.getLogList = function(size,page){
+                $http({
+                    method:'GET',
+                    url:"/admin/companyVerification/list?size="+size+"&page=" + page
+                }).then(function (resResult) {
+                    resResult = resResult.data;
+                    console.log(resResult);
+                    $scope.logList = resResult.data.companyVerificationList;
+                    if(!$scope.logFlag){
+                        //设置分页参数
+                        layui.use(['laypage', 'layer'], function(){
+                            var laypage = layui.laypage;
+                            laypage.render({
+                                elem: 'logTable'
+                                ,count: resResult.data.totalElements
+                                ,theme:"#4777B6"
+                                ,limit: 7
+                                ,limits:[5,6,7]
+                                , layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                                ,jump: function(obj,first){
+                                    if(!first){
+                                        $scope.getLogList(obj.limit,obj.curr-1);
+                                    }
+                                }
+                            });
+                        });
+                        $scope.logFlag = true;
+                    }
+                });
+            };
+            $scope.getLogList(7,0);
+
+
+            $scope.showLicenseClick = function (type,number,url) {
+                $scope.licenseType = type;
+                $scope.licenseNumber = number;
+                $scope.licenseUrl = url;
+            };
+
+            $scope.showApplyClick = function (obj) {
+                $scope.applyInfo = obj;
+            };
+            $scope.showDetailClick = function (obj,time) {
+                $scope.detailInfo = obj;
+                $scope.detailInfo.verificationTime = time;
+            };
+            $scope.typeSelect = function () {
+                $scope.showContent = $scope.passed > 0 ? "notShow" : "show";
+                console.log($scope.showContent);
+            };
+
+            $scope.submitPass = function () {
+                if($scope.passed === "0" && $("#content").text().trim() === "") {
+                    $rootScope.infoBox("请添加审核意见");
+                }else {
+                        $http({method:"POST",url:"/admin/companyVerify/"+$scope.applyInfo.id+"?result="+$scope.passed+"&reason="+$("#content").text()}).then(
+                            function (result) {
+                                console.log(result);
+                                if(result.data.status === "fail"){
+                                    $rootScope.infoBox(result.data.message);
+                                }else{
+                                    $rootScope.infoBox("审核完成");
+                                    $scope.getLogList(7,0);
+                                    $scope.getCompanyList(6,0);
+                                    $('#show_apply').modal('hide');
+                                }
+                            }
+                        );
+                    }
+                };
+
+            $("#show_apply").on('hide.bs.modal',function () {
+                $("#content").val("");
+                $scope.passed = "";
+            });
+
+            layui.use('element', function(){
+                var $ = layui.jquery
+                    ,element = layui.element; //Tab的切换功能，切换事件监听等，需要依赖element模块
+
+                //触发事件
+                var active = {
+                    tabChange: function(){
+                        //切换到指定Tab项
+                        element.tabChange('docDemoTabBrief', '22'); //切换到：用户管理
+                    }
+                };
+
+                $('.site-demo-active').on('click', function(){
+                    var othis = $(this), type = othis.data('type');
+                    active[type] ? active[type].call(this, othis) : '';
+                });
+
+                //Hash地址的定位
+                var layid = location.hash.replace(/^#test=/, '');
+                element.tabChange('test', layid);
+
+                element.on('tab(test)', function(elem){
+                    location.hash = 'test='+ $(this).attr('lay-id');
+                });
+
+            });
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="managementCtrl">
+    <div class="form-horizontal clearfix">
+        <div class="col-lg-12">
+            <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+                <!--<span>{{companyInfo.companyName}}</span>-->
+                <ul class="layui-tab-title">
+                    <li class="layui-this">企业列表</li>
+                    <li>审核记录</li>
+                </ul>
+                <div class="layui-tab-content contentFont" style="padding: 0px 35px">
+                    <!--企业列表-->
+                    <div class="layui-tab-item layui-show">
+                        <table class="layui-table" style="margin: 30px 0">
+                            <colgroup>
+                                <col width="150">
+                                <col width="150">
+                                <col width="130">
+                                <col width="160">
+                                <col width="200">
+                                <col>
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th>企业名称</th>
+                                <th>企业所在地</th>
+                                <th style="width: 120px">当前企业人数</th>
+                                <th style="width: 120px">当前账户余额（元）</th>
+                                <th>当前开通版本</th>
+                                <th>认证时间</th>
+                                <th>更新时间</th>
+                                <th>企业营业执照</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="item in companyList">
+                                    <td>{{item.companyName}}</td>
+                                    <td>{{item.address}}</td>
+                                    <td style="width: 120px">{{item.employeeCount}}</td>
+                                    <td style="width: 120px">{{item.remainder}}</td>
+                                    <td>{{item.openEditions | edition}}</td>
+                                    <td>{{item.verifyTime}}</td>
+                                    <td>{{item.lastModifiedTime}}</td>
+                                    <td>
+                                        <button class="layui-btn layui-btn-xs"
+                                                data-target="#show_license"
+                                                data-toggle="modal"
+                                                ng-click="showLicenseClick(item.licenseType,item.licenseNumber,item.licensePicURL)">
+                                            查看
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div id="companyTable" class="pageBar" style="top: 500px"></div>
+                    </div>
+                    <!--审核记录-->
+                    <div class="layui-tab-item">
+                        <table class="layui-table" style="margin: 30px 0px">
+                            <colgroup>
+                                <col width="150">
+                                <col width="150">
+                                <col width="200">
+                                <col>
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>企业名称</th>
+                                    <th>企业营业执照</th>
+                                    <th>审核内容</th>
+                                    <th>申请时间</th>
+                                    <th>审核状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="item in logList">
+                                    <td>{{item.companyVerification.company}}</td>
+                                    <td>
+                                        <button class="layui-btn layui-btn-xs"
+                                                data-target="#show_license"
+                                                data-toggle="modal"
+                                                ng-click="showLicenseClick(item.companyVerification.licenseType,item.companyVerification.licenseNumber,item.companyVerification.licensePicURL)">
+                                            查看
+                                        </button>
+                                    </td>
+                                    <td>{{item.companyVerification.applyType}}</td>
+                                    <td>{{item.companyVerification.applyTime}}</td>
+                                    <td>{{item.companyVerification.verifyResult === null ? "待审核" : item.companyVerification.verifyResult ?"通过":"拒绝"}}</td>
+                                    <td>
+                                        <button class="layui-btn layui-btn-warm layui-btn-xs"
+                                                data-target="#show_apply"
+                                                data-toggle="modal"
+                                                ng-click="showApplyClick(item.companyVerification)"
+                                                ng-if="item.companyVerification.verifyResult === null">
+                                            审核
+                                        </button>
+                                        <button class="layui-btn layui-btn-normal layui-btn-xs"
+                                                data-target="#show_detail"
+                                                data-toggle="modal"
+                                                ng-click="showDetailClick(item.companyVerification,item.verificationTime)"
+                                                ng-if="item.companyVerification.verifyResult !== null">
+                                            详情
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div id="logTable" class="pageBar" style="top: 500px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="show_license" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">企业营业执照</h4>
+                </div>
+                <div class="modal-body contentFont">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label" style="padding-left: 1px">证件类型：</label>
+                            <div class="col-sm-8">
+                                <span class="col-lg-8 control-label" style="text-align: left">{{licenseType | licenseType}}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" style="padding-left: 1px">证件号：</label>
+                            <div class="col-sm-8">
+                                <span class="col-lg-8 control-label" style="text-align: left">{{licenseNumber}}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" style="padding-left: 1px">证件照：</label>
+                            <div class="col-sm-8" style="text-align:center;max-height: 200px;max-width: 360px"><img src="{{licenseUrl}}" style="max-height: 200px;max-width: 360px"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="show_apply" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">审核详情</h4>
+                </div>
+                <div class="modal-body contentFont">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">标题</label>
+                            <label class="col-sm-6 control-label" style="text-align: left">{{applyInfo.applyType}}</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">审核内容</label>
+                            <label class="col-sm-6 control-label" style="text-align: left">{{applyInfo.applyInfo}}</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">审核</label>
+                            <div class="col-sm-8">
+                                <select class="form-control" name="licenseType" ng-model="passed" ng-change="typeSelect()">
+                                    <option value="1" selected="selected">通过</option>
+                                    <option value="0">拒绝</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" ng-if="showContent === 'show'">
+                            <label class="col-sm-2 control-label"><span class="text-danger">*</span>审核意见</label>
+                            <div class="col-sm-8">
+                                <div class="form-control" style="overflow:hidden;height:200px;max-height:200px" contenteditable="true" id="content">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" ng-click="submitPass()">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="show_detail" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">审核详情</h4>
+                </div>
+                <div class="modal-body contentFont">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">标题</label>
+                            <label class="col-sm-6 control-label" style="text-align: left">{{detailInfo.applyType}}</label>
+                        </div>
+                        <div class="form-group">
+                            <label  class="col-sm-2 control-label">审核内容</label>
+                            <label class="col-sm-6 control-label" style="text-align: left">{{detailInfo.applyInfo}}</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">审核结果</label>
+                            <label class="col-sm-6 control-label" style="text-align: left">{{detailInfo.verifyResult ? "通过" : "不通过"}}</label>
+                        </div>
+                        <div class="form-group" ng-if="!detailInfo.verifyResult">
+                            <label class="col-sm-2 control-label">审核意见</label>
+                            <label class="col-sm-6 control-label" style="text-align: left">{{detailInfo.reason}}</label>
+                        </div>
+                        <div class="form-group">
+                            <label  class="col-sm-2 control-label">审核时间</label>
+                            <label class="col-sm-6 control-label" style="text-align: left">{{detailInfo.verificationTime}}</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

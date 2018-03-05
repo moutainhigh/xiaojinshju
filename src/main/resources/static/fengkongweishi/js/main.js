@@ -28,6 +28,49 @@ angular.module('app')
             return year+month+day;
         };
 
+        //弹出框
+        var layer;
+        layui.use('layer',function () {
+            layer = layui.layer;
+        });
+        $rootScope.infoBox = function (text) {
+            layer.open({
+                type: 1
+                ,offset: 'rb'
+                ,content: '<div style="padding: 20px 100px;">'+ text +'</div>'
+                ,btn: '关闭'
+                ,btnAlign: 'c' //按钮居中
+                ,shade: 0 //不显示遮罩
+                ,yes: function(){
+                    layer.closeAll();
+                }
+            });
+        };
+
+        //正则验证
+        //手机号正则验证
+        $rootScope.phoneCheck = function (number) {
+            var reg = /^[1][3,4,5,7,8][0-9]{9}$/;
+            return reg.test(number);
+        };
+
+        //身份证正则验证
+        $rootScope.idCardCheck = function (number) {
+            var reg = /(^[1-9]\d{5}(19|20)\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}$)/;
+            return reg.test(number);
+        };
+
+        // //loading
+        // $rootScope.load = function () {
+        //     var div = document.createElement("div");
+        //     div.className = "loading";
+        //     var body = document.getElementsByTagName("body");
+        //     body.appendChild(div);
+        // };
+
+
+
+
       /*
        * 设置分页的函数
        * @author  金杭

@@ -2,8 +2,7 @@ package fengkongweishi.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jianger
@@ -28,7 +27,42 @@ public class BeanToMapUtils {
         // 取出bean里的所有方法
         Method[] methods = cls.getDeclaredMethods();
         Field[] fields = cls.getDeclaredFields();
+        return getValuesFromMethodsWithFields(methods, fields, bean);
+    }
 
+    /**
+     * 将一个bean转换为一个map,包括父类
+     * @param bean
+     * @return
+     */
+    public static Map<String, Object> beanToMapWithSuper(Object bean) {
+        Map<String, Object> result = new HashMap<>();
+        if (bean == null) {
+            return result;
+        }
+        Class<?> cls = bean.getClass();
+        // 取出bean里的所有方法
+        Method[] methods = cls.getDeclaredMethods();
+        Field[] fields = getAllFields(bean);
+        return getValuesFromMethodsWithFields(methods, fields, bean);
+    }
+
+    private static Field[] getAllFields(Object object){
+        Class clazz = object.getClass();
+        List<Field> fieldList = new ArrayList<>();
+        while (clazz != null){
+            fieldList.addAll(new ArrayList<>(Arrays.asList(clazz.getDeclaredFields())));
+            clazz = clazz.getSuperclass();
+        }
+        Field[] fields = new Field[fieldList.size()];
+        fieldList.toArray(fields);
+        return fields;
+    }
+
+
+    private static Map<String, Object> getValuesFromMethodsWithFields(Method[] methods, Field[] fields, Object bean) {
+        Map<String, Object> result = new HashMap<>();
+        Class<?> cls = bean.getClass();
         for (Field field : fields) {
             try {
                 String fieldGetName = parGetName(field.getName());

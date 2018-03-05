@@ -57,7 +57,23 @@ public class FraudVO implements IAnalyseItem {
 
     private static BlackRiskItem map2BlackRiskItem(Object o) {
         JSONObject blackRiskItem = (JSONObject) o;
-        return new BlackRiskItem(blackRiskItem.getString("blackFactsType"), blackRiskItem.getString("blackFacts"));
+        return new BlackRiskItem(convertBlackFactsTypeD(blackRiskItem.getString("blackFactsType")), blackRiskItem.getString("blackFacts"));
+    }
+
+    private static String convertBlackFactsTypeD(String blackFactsType) {
+        // D01：疑似催收风险 D02：名下公司存在违规行为（被税务局或者工商局公示） D03：来自信贷高风险区域 D04：其他潜在风险
+        switch (blackFactsType) {
+            case "D01":
+                return "疑似催收风险";
+            case "D02":
+                return "名下公司存在违规行为(被税务局或者工商局公示)";
+            case "D03":
+                return "来自信贷高风险区域";
+            case "D04":
+                return "其他潜在风险";
+            default:
+                return "";
+        }
     }
 
     public List<BlackRiskItem> getFrauds() {

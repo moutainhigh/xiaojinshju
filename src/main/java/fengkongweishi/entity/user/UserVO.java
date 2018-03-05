@@ -19,9 +19,11 @@ public class UserVO {
 
     private Role role;
 
-    private boolean enabled;
+    private Boolean enabled;
 
     private CompanyVO company;
+
+    private Boolean superiorMember;
 
     public UserVO(User user) {
         this.id = user.getId();
@@ -30,57 +32,38 @@ public class UserVO {
         this.role = user.getRole();
         if(user.getCompany() != null){
             Company company = user.getCompany();
-            CompanyVO companyVO = new CompanyVO(company);
-            this.setCompany(companyVO);
+            this.company = new CompanyVO(company);
+            this.superiorMember = user.getCompany().getParent() == null;
         }
         this.enabled = user.isEnabled();
+
     }
 
     public Integer getId() {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public String getUsername() {
         return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getNickname() {
         return nickname;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
     public Role getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public boolean isEnabled() {
+    public Boolean getEnabled() {
         return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     public CompanyVO getCompany() {
         return company;
     }
 
-    public void setCompany(CompanyVO company) {
-        this.company = company;
+    public Boolean getSuperiorMember() {
+        return superiorMember;
     }
 }

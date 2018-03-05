@@ -1,15 +1,13 @@
 package fengkongweishi.service.report;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fengkongweishi.entity.apisearchlog.APISearchLog;
 import fengkongweishi.entity.apisearchlog.APISearchLogRepository;
 import fengkongweishi.entity.supplyapi.*;
 import fengkongweishi.service.ParameterService;
-import fengkongweishi.util.AliyunCallable;
-import fengkongweishi.util.CsecCallable;
-import fengkongweishi.util.XinShuCallable;
-import fengkongweishi.util.YoufenCallable;
+import fengkongweishi.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -214,10 +212,21 @@ public class FetchService {
         API api = new API();
         api.setSupplyAPI(aliYunOcrVehicle);
         api.getHeaders().put("Content-Type", "application/json; charset=UTF-8");
-        String body = "{\"inputs\":[{\"image\":{\"dataType\":50,\"dataValue\":\"" + base64Code + "\"}}]}";
+        String body =  "{\"image\":\""+base64Code+"\",\"configure\":\"{\\\"side\\\":\\\"face\\\"}\"}";
         logger.info("即时查询OcrVehicle");
         AliyunCallable aliyunCallable = new AliyunCallable(api.getSupplyAPI(), api.getHeaders(), new HashMap<>(), body);
         return aliyunCallable.call();
+    }
+
+    /**
+     * 获取百度的行驶证识别结果
+     *
+     * @return
+     */
+    public JSONObject fetchOcrVehicleBaidu(byte[] image) {
+        BaiduAipOcr baiduAipOcr = BaiduAipOcr.getInstance();
+        logger.info("即时查询BaiDuOcrVehicle");
+        return baiduAipOcr.vehicleLicense(image);
     }
 
     public Map fetchCriminal(String name, String idCard) {

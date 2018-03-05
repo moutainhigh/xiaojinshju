@@ -186,3 +186,132 @@ a,a:hover,a:active,a:focus{
 .rightLabel {
     padding: 7px 15px;
 }
+
+
+/*����*/
+.warp_content{
+    width: 600px;
+    height: 530px;
+    border-radius: 5px;
+    margin: 47px auto 0;
+    box-shadow: 0 0 10px #d9d9d9;
+}
+.auth_title_warp{
+    width: 200px;
+    margin: 45px auto 40px;
+}
+.auth_title{
+    margin-left: 10px;
+    color:#4D4D4D;
+    text-align: center;
+    font-size: 20px;
+    height: 30px;
+    line-height: 30px;
+    display: inline-block;
+    vertical-align: middle;
+}
+.valid-form{
+    position: relative;
+}
+.valid-form-item{
+    position: absolute;
+    font-size: 14px;
+    top: -29px;
+    left: 192px;
+    z-index: 90;
+}
+.valid-form-item > div > span {
+    width: 280px;
+    height: 28px;
+    background: #ffffff;
+    position: absolute;
+    left:0;
+    top:0;
+}
+
+.input-group{
+    width: 425px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+.input-group label{
+    width: 85px;
+    text-align: right;
+    margin-right: 19px;
+    font-size: 14px;
+}
+.input-group input,.input-group select{
+    width: 291px !important;
+    height: 34px;
+    border-radius: 2px;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+}
+
+
+.input-group input:focus,.input-group select:focus {
+    border-color: #4777B6;
+}
+.input-btn-group{
+    width: 291px;
+    margin: 0 auto;
+    padding-left: 37px;
+}
+.input-btn-group > button{
+    width: 291px;
+    height: 38px;
+    background: #4777B6;
+    border-radius: 2px;
+    color: #ffffff;
+    border:none;
+}
+.input-btn-group > button:hover{
+    color: #ffffff;
+}
+.input-btn-group > div > button{
+    width: 291px;
+    height: 38px;
+    border-radius: 2px;
+    color: #ffffff;
+}
+.input-btn-group > div > p{
+    width: 291px;
+    color: #999999;
+    font-size: 14px;
+    margin-top: 23px;
+    text-align: center;
+}
+.input-btn-group > div > button:hover{
+    color: #ffffff;
+}
+.margin-bottom-0{
+    margin-bottom: 0;
+}
+.blueBtn {
+    background: #4777B6;
+    width: 120px;
+}
+
+.blueBtn_primary{
+    color: #4777B6;
+    border: 1px solid #4777B6;
+}
+
+.pageBar{
+    position: absolute;
+    bottom: 35px;
+    width: 1200px;
+    left: 50%;
+    margin-left: -600px;
+    text-align: center !important;
+    color: black !important;
+}

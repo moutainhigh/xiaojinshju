@@ -200,3 +200,27 @@ rechargeModal{
 ul li{
     list-style-type: disc !important;
 }
+
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(10,10,10,0.8) url("../images/loading.gif") no-repeat center center;
+    z-index: 2000;
+}
+
+.verifyPanel{
+    width: 600px;
+    height: 535px;
+    margin: 45px auto;
+    box-shadow: -1px -1px 2px #999999;
+}
+
+tr td{
+    text-align: center;
+}
+tr th{
+    text-align: center !important;
+}

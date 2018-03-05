@@ -12,7 +12,7 @@ import fengkongweishi.entity.evaluate.EvaluationRepository;
 import fengkongweishi.entity.evaluate.EvaluationVO;
 import fengkongweishi.entity.personreport.PersonReport;
 import fengkongweishi.entity.personreport.PersonReportRepository;
-import fengkongweishi.entity.personreport.PersonReportVO;
+import fengkongweishi.entity.personreport.BasePersonReportVO;
 import fengkongweishi.enums.ExceptionEnum;
 import fengkongweishi.enums.Level;
 import fengkongweishi.service.CustomerService;
@@ -91,7 +91,7 @@ public class CustomerController {
 	// customerId) {
 	// Customer customer = customerRepository.findOne(customerId);
 	// PersonReport report = customer.getLatestSearchLog().getReport();
-	// PersonReportVO reportVo = new PersonReportVO(report,
+	// BasePersonReportVO reportVo = new BasePersonReportVO(report,
 	// customer.getLatestSearchLog().getLevel());
 	// return new ResponseBody(reportVo);
 	// }
@@ -101,7 +101,7 @@ public class CustomerController {
 	public ResponseBody showReport(@PathVariable("reportId") Integer reportId) {
 		PersonReport report = personReportRepository.findOne(reportId);
 		CustomerSearchLog customerSearchLog = customerSearchLogRepository.findByReport(report);
-		PersonReportVO reportVo = new PersonReportVO(report, customerSearchLog.getLevel());
+		BasePersonReportVO reportVo = BasePersonReportVO.create(report, customerSearchLog.getLevel());
 		return new ResponseBody(reportVo);
 	}
 

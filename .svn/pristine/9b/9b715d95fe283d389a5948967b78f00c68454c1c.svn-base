@@ -1,0 +1,149 @@
+<script>
+    "use strict";
+    app.controller("entryCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$timeout',
+        function ($scope, $http, $rootScope, $state, $timeout) {
+
+            $scope.editionStatus = [];
+            $scope.editions = ["PERSONJUNIOR","PERSONMOBILE","PERSONECOMMERCE","PERSONSENIOR"];
+            $scope.getStatus = function () {
+                $http({method:"GET",url:"/company/query"}).then(
+                    function (result) {
+                        $scope.editionStatus = result.data.data;
+                        console.log($scope.editionStatus);
+                    }
+                );
+            };
+            $scope.getStatus();
+
+
+            $scope.editionClick =function (number) {
+                var update = function (edition) {
+                    console.log(edition);
+                    $http({method:"GET",url:"/company/editionUpgreade?edition=" + edition}).then(
+                        function (result){
+                           if(result.data.status === "success"){
+                               $rootScope.infoBox("申请已提交，请耐心等待");
+                               $scope.getStatus();
+                           }else{
+                               $rootScope.infoBox(result.data.message);
+                           }
+                        }
+                    )
+                };
+                switch ($scope.editionStatus[number].status){
+                    case "查询":
+                        $state.go("editionSearch",{edition:$scope.editions[number]});
+                        break;
+                    case "申请":
+                        if($rootScope.myinfo.role.name === 'ROLE_MANAGER' && $rootScope.myinfo.superiorMember){
+                            update($scope.editions[number]);
+                        } else{
+                            alert("无权限");
+                        }
+                        break;
+                    default:
+                        return 0;
+                }
+            }
+
+        }
+    ]);
+</script>
+<div ng-controller="entryCtrl">
+    <div class="searchDiv">
+        <div class="searchPanel">
+        <div class="searchTitle" style="background: #F8F8F8">
+            <div class="tabTitle">基础版</div>
+            <div><a href="" style="text-decoration: underline">报告样例</a></div>
+        </div>
+        <div class="feeSpan"><sup class="tabTitle">￥</sup>8<sub class="contentFont" style="color: grey">&nbsp;/次</sub></div>
+        <div class="searchBtn"><button class="btn m-b-xs w-xs btn-default" style="color:{{editionStatus[0].color}}" ng-click="editionClick(0)">{{editionStatus[0].status}}</button></div>
+        <div class="searchItems">
+            <ul>
+                <li>身份信息核实</li>
+                <li class="font_grey">学历信息核实</li>
+                <li>支付宝账户查询</li>
+                <li>淘宝收货地址查询</li>
+                <li>芝麻信用查询</li>
+                <li>反欺诈信息查询</li>
+                <li>违法犯罪核查</li>
+                <li class="font_grey">通信记录分析</li>
+                <li class="font_grey">淘宝数据分析</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="searchPanel">
+        <div class="searchTitle font_white" style="background: #6CABE6">
+            <div class="tabTitle font_white">通信版</div>
+            <div><a href="" style="text-decoration: underline">报告样例</a></div>
+        </div>
+        <div class="feeSpan"><sup class="tabTitle">￥</sup>12<sub class="contentFont" style="color: grey">&nbsp;/次</sub></div>
+        <div class="searchBtn"><button class="btn m-b-xs w-xs btn-default" style="color:{{editionStatus[1].color}}" ng-click="editionClick(1)">{{editionStatus[1].status}}</button></div>
+        <div class="searchItems">
+            <ul>
+                <li>身份信息核实</li>
+                <li class="font_grey">学历信息核实</li>
+                <li>支付宝账户查询</li>
+                <li>淘宝收货地址查询</li>
+                <li>芝麻信用查询</li>
+                <li>反欺诈信息查询</li>
+                <li>违法犯罪核查</li>
+                <li>通信记录分析</li>
+                <li class="font_grey">淘宝数据分析</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="searchPanel ">
+        <div class="searchTitle font_white" style="background: #FF9800">
+            <div class="tabTitle font_white">淘宝版</div>
+            <div><a href="" style="text-decoration: underline">报告样例</a></div>
+        </div>
+        <div class="feeSpan"><sup class="tabTitle">￥</sup>12<sub class="contentFont" style="color: grey">&nbsp;/次</sub></div>
+        <div class="searchBtn"><button class="btn m-b-xs w-xs btn-default"style="color:{{editionStatus[2].color}}" ng-click="editionClick(2)">{{editionStatus[2].status}}</button></div>
+        <div class="searchItems">
+            <ul>
+                <li>身份信息核实</li>
+                <li class="font_grey">学历信息核实</li>
+                <li>支付宝账户查询</li>
+                <li>淘宝收货地址查询</li>
+                <li>芝麻信用查询</li>
+                <li>反欺诈信息查询</li>
+                <li>违法犯罪核查</li>
+                <li class="font_grey">通信记录分析</li>
+                <li>淘宝数据分析</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="searchPanel">
+        <div class="searchTitle font_white recommend" style="background-color: #8BC34A">
+            <div class="tabTitle font_white">全面版</div>
+            <div><a href="" style="text-decoration: underline">报告样例</a></div>
+        </div>
+        <div class="feeSpan"><sup class="tabTitle">￥</sup>15<sub class="contentFont" style="color: grey">&nbsp;/次</sub></div>
+        <div class="searchBtn"><button class="btn m-b-xs w-xs btn-default"style="color:{{editionStatus[3].color}}" ng-click="editionClick(3)">{{editionStatus[3].status}}</button></div>
+        <div class="searchItems">
+            <ul>
+                <li>身份信息核实</li>
+                <li>学历信息核实</li>
+                <li>支付宝账户查询</li>
+                <li>淘宝收货地址查询</li>
+                <li>芝麻信用查询</li>
+                <li>反欺诈信息查询</li>
+                <li>违法犯罪核查</li>
+                <li>通信记录分析</li>
+                <li>淘宝数据分析</li>
+            </ul>
+        </div>
+    </div>
+    </div>
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
+    </div>
+</div>
