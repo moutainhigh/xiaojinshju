@@ -1,0 +1,197 @@
+<script>
+    "use strict";
+    app.controller("accountCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$interval','$timeout',"$filter",
+        function ($scope, $http, $rootScope, $state,$interval,$timeout,$filter) {
+
+//          获取企业基本信息
+            $scope.getCompanyInfo = function () {
+                $http.get("/company/myInfo").then(
+                    function (result) {
+                        $scope.companyInfo = result.data.data;
+                    }
+                );
+            };
+            $scope.getCompanyInfo();
+
+            //获取消费记录列表
+            $scope.getRemainderLogList = function(size,page){
+                $('.consumeList tr').remove();
+                $scope.consumptions = [];
+                $http({
+                    method:'GET',
+                    url:"/company/getRemainderLog?size="+size+"&page=" + page
+                })
+                    .then(function (resResult) {
+                        resResult = resResult.data;
+                        console.log(resResult);
+                        $('.consumeList tr').remove();
+                        $scope.consumptions = resResult.data.companyRemainderLogs;
+                        if(!$scope.consumptionsFlag){
+                            //分页功能
+                            layui.use(['laypage', 'layer'], function(){
+                                var laypage = layui.laypage;
+                                laypage.render({
+                                    elem: 'consumptionPage'
+                                    ,count: resResult.data.totalElements
+                                    ,theme:"#4777B6"
+                                    ,limit: 7
+                                    ,limits:[5,6,7]
+                                    ,layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                                    ,jump: function(obj,first){
+                                        if(!first){
+                                            $scope.getRemainderLogList(obj.limit,obj.curr-1);
+                                        }
+                                    }
+                                });
+                            })
+                        }
+                        $scope.consumptionsFlag =true;
+
+                    });
+            };
+
+            $scope.getRemainderLogList(7,0);
+
+
+            $scope.deposit100 = function(){
+                $scope.deposit_value = 100;
+            };
+            $scope.deposit1000 = function(){
+                $scope.deposit_value = 1000;
+            };
+            $scope.deposit5000 = function(){
+                $scope.deposit_value = 5000;
+            };
+            $scope.deposit10000 = function(){
+                $scope.deposit_value = 10000;
+            };
+
+            $scope.depositSubmit = function(){
+                window.open("/#/payment?value="+$scope.deposit_value)
+            };
+
+            layui.use('element', function(){
+                var $ = layui.jquery
+                    ,element = layui.element; //Tab的切换功能，切换事件监听等，需要依赖element模块
+                $timeout(function () {
+                    if(!($rootScope.myinfo.role.name === 'ROLE_MANAGER' && $rootScope.myinfo.superiorMember)){
+                        element.tabChange('employee_list', "companyMember")
+                        //$("#companyMember").click();
+
+                    }
+                },0,false)
+            });
+
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="accountCtrl">
+
+    <div class="wrapper-md clearfix" style="padding:50px 45px;">
+        <div class="font-thin h4">
+            <div style="display: flex">
+                <div>
+                    <img src="/fengkongweishi/images/account.png" style="width: 60px;height: 60px">
+                </div>
+                <div style="padding: 6px">
+                    <div class="contentFont">账户余额（元）</div>
+                    <div class="tabTitle">{{companyInfo.remainder}}</div>
+                </div>
+                <div style="padding: 15px">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal blueBtn"
+                            data-target="#account_recharge"
+                            data-toggle="modal">充值
+                    </button>
+                </div>
+            </div>
+            <table class="layui-table" style="margin: 10px 0px">
+                <colgroup>
+                    <col width="150">
+                    <col width="150">
+                    <col width="200">
+                    <col>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>消费分类</th>
+                    <th>消费金额（元）</th>
+                    <th>消费时间</th>
+                    <th>操作人</th>
+                    <th>操作人联系方式</th>
+                </tr>
+                </thead>
+                <tbody class="consumeList">
+                <tr ng-repeat="item in consumptions">
+                    <td>{{item.chargeType}}</td>
+                    <td>{{item.value}}</td>
+                    <td>{{item.createTime}}</td>
+                    <td>{{item.nickname}}</td>
+                    <td>{{item.username}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <div id="consumptionPage" class="pageBar" style="top: 521px;"></div>
+        </div>
+
+    </div>
+
+    <!--充值缴费模态框-->
+    <div class="modal fade" id="account_recharge" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">充值缴费</h4>
+                </div>
+                <div class="modal-body contentFont">
+                    <form class="form-horizontal" style="text-align: center">
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-2">
+                                <button class="form-control rechargeBtn" ng-click="deposit100()">
+                                    充100元
+                                </button>
+                            </div>
+                            <div class="col-lg-6">
+                                <button class="form-control rechargeBtn" ng-click="deposit1000()">
+                                    充1000元
+                                    <br/>
+                                    <span class="text-danger" style="font-size: 12px">返还100元</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-2">
+                                <button class="form-control rechargeBtn" ng-click="deposit5000()">
+                                    充5000元
+                                    <br/>
+                                    <span class="text-danger" style="font-size: 12px">返还750元</span>
+                                </button>
+                            </div>
+                            <div class="col-sm-6">
+                                <button class="form-control rechargeBtn recommend" ng-click="deposit10000()">
+                                    充10000元
+                                    <br/>
+                                    <span class="text-danger" style="font-size: 12px">返还2000元</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" style="text-align: center" ng-click="depositSubmit()">
+                        立即支付
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
+    </div>
+</div>

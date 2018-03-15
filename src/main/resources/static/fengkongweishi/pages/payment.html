@@ -1,0 +1,42 @@
+<script>
+    "use strict";
+    app.controller("paymentCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$timeout','$interval',
+        function ($scope, $http, $rootScope, $state, $timeout, $interval) {
+            var layer;
+            layui.use('layer',function () {
+                layer = layui.layer;
+                $scope.index = layer.load(1, {
+                    shade: [0.5,'#fff'] //0.1透明度的白色背景
+                });
+            });
+            var url =location.href;
+            url = url.split("=");
+            var param = url[1];
+            console.log(param);
+            $http({method: "POST", url: '/company/deposit', data:{platform:'ALIPAY',amount:param}}).then(function (response) {
+                var resResult = response.data;
+                console.log(resResult);
+                if (typeof resResult.status !== 'undefined' && resResult.status === 'fail') {
+                    $rootScope.infoBox(resResult.message);
+                } else {
+                    jQuery("#alipay_return").html(response.data);
+                }
+            }, function(){
+
+            });
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="paymentCtrl">
+    <div id="alipay_return">
+
+    </div>
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
+    </div>
+</div>
+

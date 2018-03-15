@@ -1,0 +1,96 @@
+<script>
+    "use strict";
+    app.controller("employeeCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$interval','$timeout',"$filter",
+        function ($scope, $http, $rootScope, $state,$interval,$timeout,$filter) {
+
+//          获取企业基本信息
+            $scope.getCompanyInfo = function () {
+                $http.get("/company/myInfo").then(
+                    function (result) {
+                        $scope.companyInfo = result.data.data;
+                    }
+                );
+            };
+            $scope.getCompanyInfo();
+
+
+            $scope.setImgUrl = function (url) {
+                $scope.biggerUrl = url;
+            };
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="employeeCtrl">
+    <div class="wrapper-md clearfix" style="padding:50px 45px;">
+        <div class="font-thin h4">
+            <div class="layui-tab-item layui-show">
+                <div class="item_table idCardVO" style="height: 450px;">
+                    <div class="table_head">
+                        <span class="table_title">企业信息</span>
+                    </div>
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="150">
+                            <col width="320">
+                            <col width="150">
+                            <col width="320">
+                            <col>
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td style="background-color:#F8F8F8;">企业注册人</td>
+                            <td>{{companyInfo.managerName}}</td>
+                            <td style="background-color:#F8F8F8;">注册人手机号</td>
+                            <td>{{companyInfo.managerMobile}}</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color:#F8F8F8;">企业所在地</td>
+                            <td>{{companyInfo.province + companyInfo.city}}</td>
+                            <td style="background-color:#F8F8F8;">企业详细地址</td>
+                            <td>{{companyInfo.address}}</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color:#F8F8F8;">证件类型</td>
+                            <td>{{companyInfo.licenseType | licenseType}}</td>
+                            <td style="background-color:#F8F8F8;">证件号码</td>
+                            <td>{{companyInfo.licenseNumber}}</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color:#F8F8F8;">证件图片</td>
+                            <td><span><a data-toggle="modal"
+                                         data-target="#bigger_picture"
+                                         ng-click="setImgUrl(companyInfo.licensePicURL)"
+                                         class="underLine text-decoration-none">查看图片</a></span></td>
+                            <td style="background-color:#F8F8F8;">开通版本</td>
+                            <td>{{companyInfo.openEditions | edition}}</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color:#F8F8F8;">团队个数</td>
+                            <td><a ui-sref="team_list"
+                                   class="underLine text-decoration-none">{{companyInfo.teamCount}}</a></td>
+                            <td style="background-color:#F8F8F8;">企业认证时间</td>
+                            <td>{{companyInfo.verifyTime}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <!--查看营业执照-->
+    <div class="modal fade bs-example-modal-lg text-center" id="bigger_picture" tabindex="-1" role="dialog"
+         aria-labelledby="myLargeModalLabel">
+        <div class="modal-dialog modal-lg" style="display: inline-block; width: auto;">
+            <div class="modal-content">
+                <img src="{{biggerUrl}}" style="max-width: 700px;max-height: 480px">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="footer_wrap">
+    <div class="pull-right">
+        杭州商道科技有限公司 &nbsp;
+        0571-56932575
+    </div>
+</div>
+</div>

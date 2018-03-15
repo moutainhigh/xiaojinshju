@@ -1,0 +1,70 @@
+<script>
+    "use strict";
+    app.controller("moxieCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$timeout','$interval',"$stateParams",
+        function ($scope, $http, $rootScope, $state, $timeout, $interval,$stateParams) {
+            //数据初始化
+            $scope.id = sessionStorage.getItem("reportId");
+            $scope.edition = sessionStorage.getItem("edition");
+            $scope.appCode = sessionStorage.getItem("appCode");
+            $scope.searFlag = sessionStorage.getItem("searFlag");
+            console.log($scope.edition);
+
+            //进度条百分比
+            if($scope.edition == 'PERSONSENIOR'){
+                //全面版
+                $scope.valuenow=60;
+                $timeout(function () {
+                    $scope.valuenow=80;
+                },500)
+            }
+            else if($scope.edition == 'PERSONMOBILE'){
+                //通讯版
+                $scope.valuenow=75;
+                $timeout(function () {
+                    $scope.valuenow=100;
+                },500)
+            }
+            else{
+                $scope.valuenow=0;
+            }
+
+
+            $scope.toUrl = $stateParams.toUrl;
+            $scope.timeout = setInterval(function () {
+                var newUrl = parent.document.getElementById("moxieIframe").contentWindow.location.href;
+                if(newUrl.indexOf("loading") !== -1 && newUrl.indexOf("loading") <100 && $scope.edition==="PERSONSENIOR"){
+                    $("moxieIframe").remove();
+                    clearInterval($scope.timeout);
+                    $state.go('taobao', {reportId: $scope.id,edition: $scope.edition,appCode:$scope.appCode,searFlag:$stateParams.searFlag});
+                }else if(newUrl.indexOf("loading") !== -1 && newUrl.indexOf("loading") <100 && $scope.edition==="PERSONMOBILE"){
+                    $("moxieIframe").remove();
+                    clearInterval($scope.timeout);
+                    $state.go("search_detail",{id:$scope.id});
+                }
+
+            },1000)
+
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="moxieCtrl">
+    <div class="queryProgressBar" style="top: 0;">
+        <div class="progress" style="height: 6px;border-radius: 0">
+            <div class="progress-bar" role="progressbar" aria-valuenow="{{valuenow}}" aria-valuemin="0" aria-valuemax="100" ng-style="{ 'width' : valuenow +'%'}">
+                <span class="sr-only">40% Complete (success)</span>
+            </div>
+        </div>
+    </div>
+    <iframe id="moxieIframe" src="{{toUrl}}" name="moxie" width="1200px" marginwidth="0" height="600px" marginheight="-40px" margin="0" scrolling="no" frameborder="0"></iframe>
+
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
+    </div>
+</div>
+
+
+

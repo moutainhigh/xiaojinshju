@@ -1,0 +1,215 @@
+<script>
+    "use strict";
+    app.controller("reportCtrl", [
+        "$scope", "$http", "$rootScope", "$state",'$timeout',
+        function ($scope, $http, $rootScope, $state, $timeout) {
+            $scope.initSearch = function () {
+                $scope.searchInfo = {
+                    createdByCompany:"",
+                    no:"",
+                    level:"",
+                    createdBy:"",
+                    name:"",
+                    dateSelect:""
+                };
+            };
+            $scope.initSearch();
+            $scope.searchFlag=false;
+            //时间控件开始
+            //控制点击日历图表弹出选择框
+
+            layui.use('laydate', function() {
+                var laydate = layui.laydate;
+
+                //常规用法
+                laydate.render({
+                    elem: '#dateSelect'
+                    ,range: true
+                });
+            });
+
+            $scope.getList = function(size,page){
+                if($("#dateSelect").val()){
+                    $scope.searchInfo.dateSelect = $("#dateSelect").val();
+                }
+                $http({
+                    method:'POST',
+                    url:"/reportManage/reportList?size="+size+"&page="+page+"&sort=customerSearchLog.createTime,desc",
+                    data:$scope.searchInfo
+                }).then(function (resResult) {
+                    console.log(resResult)
+                    $('.reportList td').remove();
+                    $scope.list = resResult.data.data.reportList;
+                    if(!$scope.searchFlag){
+                        //分页功能
+                        layui.use(['laypage', 'layer'], function(){
+                            var laypage = layui.laypage;
+                            laypage.render({
+                                elem: 'reportPage'
+                                ,count: resResult.data.data.totalElements
+                                ,limit: 7
+                                ,limits:[6,7,8]
+                                ,theme: '#4777B6'
+                                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                                ,jump: function(obj,first)
+                                {
+                                    if(!first){
+                                        $scope.getList(obj.limit,obj.curr-1);
+                                    }
+
+                                }
+                            });
+                        });
+                        $scope.searchFlag =true;
+                    }
+                });
+            };
+            $scope.getList(7,0);
+
+            //查询单位下拉列表
+            $http.get("/reportManage/companyNameList").success(
+                function (result) {
+                    console.log(result);
+                    $scope.storeList = result.data;
+                }
+            );
+
+            //操作人下拉列表
+            $http.get("/reportManage/createdByNameList").success(
+                function (result) {
+                    console.log(result);
+                    $scope.memberList = result.data;
+                }
+            );
+
+            $scope.searchList = function () {
+                $scope.searchFlag = false;
+                $scope.getList(7,0);
+            };
+
+            $scope.resetClick = function () {
+                $scope.initSearch();
+                $("#dateSelect").val('');
+                $scope.searchFlag = false;
+                $scope.getList(7,0);
+            };
+
+            $scope.goDetail = function (id) {
+                $state.go('search_detail', {id: id,fromNo:true});
+            };
+        }
+    ]);
+</script>
+<div class="body_wrap list_wrap" ng-controller="reportCtrl">
+    <div class="wrapper-md clearfix" style="padding:50px 45px;">
+        <div class="font-thin h4">
+            <div>
+                <form class="clearfix">
+                    <div class="pull-left m-r inline">
+                        <select type="text"
+                                class="form-control"
+                                autocomplete="off"
+                                ng-model="searchInfo.createdByCompany"
+                                ng-options="store.id as store.name for store in storeList">
+                            <option selected="selected" value="">查询单位</option>
+                        </select>
+                    </div>
+                    <div class="pull-left m-r inline">
+                        <select type="text"
+                                class="form-control"
+                                style="width: 102px"
+                                autocomplete="off"
+                                ng-model="searchInfo.createdBy"
+                                ng-options="member.id as member.nickname for member in memberList">
+                            <option selected="selected" value="">操作人</option>
+                        </select>
+                    </div>
+                    <div class="pull-left m-r inline">
+                        <select type="text"
+                                class="form-control"
+                                autocomplete="off"
+                                ng-model="searchInfo.level">
+                            <option selected="selected" value="">评级</option>
+                            <option value="GREAT">优</option>
+                            <option value="GOOD">良</option>
+                            <option value="BAD">差</option>
+                        </select>
+                    </div>
+                    <div class="pull-left m-r inline col-sm-2" style="padding-left: 0px;margin-right: 0px">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="报告编号"
+                               ng-model="searchInfo.no">
+                    </div>
+                    <div class="pull-left m-r inline col-sm-2" style="padding-left: 0px;margin-right: 0px">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="客户姓名"
+                               ng-model="searchInfo.name">
+                    </div>
+                    <div class="pull-left m-r inline col-sm-2" style="padding-left: 0px;margin-right: 0px">
+                        <input type="text"
+                               id="dateSelect"
+                               class="form-control"
+                               placeholder="查询时间段"
+                               ng-model="searchInfo.dateSelect">
+                    </div>
+                    <div class="pull-left m-r inline" style="margin: 2px 15px">
+                        <button class="layui-btn layui-btn-sm blueBtn"
+                                ng-click="searchList()"
+                        >查询
+                        </button>
+                        <button class="layui-btn layui-btn-sm layui-btn-primary blueBtn_primary"
+                                ng-click="resetClick()"
+                        >清除
+                        </button>
+                    </div>
+                    <!--<div class="pull-right m-r inline">-->
+                    <!--<button class="resetBtn" ng-click="resetClick()"></button>-->
+                    <!--</div>-->
+                </form>
+
+                <table class="layui-table" style="margin: 30px 0">
+                    <colgroup>
+                        <col width="150">
+                        <col width="150">
+                        <col width="200">
+                        <col>
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th>报告编号</th>
+                        <th>客户姓名</th>
+                        <th>查询单位</th>
+                        <th>操作人</th>
+                        <th>处理状态</th>
+                        <th>评级</th>
+                        <th>查询时间</th>
+                    </tr>
+                    </thead>
+                    <tbody class="reportList">
+                    <tr ng-repeat="item in list">
+                        <td><a ng-click="goDetail(item.reportId)" style="color: #4777B6">{{item.no}}</a></td>
+                        <td>{{item.name}}</td>
+                        <td>{{item.createdByCompany}}</td>
+                        <td>{{item.createdBy}}</td>
+                        <td>{{item.status}}</td>
+                        <td>{{item.level | level}}</td>
+                        <td>{{item.queryTime}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div id="reportPage" class="pageBar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div class="footer_wrap">
+    <div class="pull-right">
+        杭州商道科技有限公司 &nbsp;
+        0571-56932575
+    </div>
+</div>
+</div>

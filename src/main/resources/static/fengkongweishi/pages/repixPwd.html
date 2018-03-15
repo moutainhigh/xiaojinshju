@@ -1,0 +1,160 @@
+<div class="body_wrap" ng-controller="registerCtrl">
+    <div class="warp_content">
+        <table width="100%">
+            <tr>
+                <td width="100%" style="vertical-align: top;">
+                    <div class="auth_title_warp" style="width: 140px">
+                        <img src="/fengkongweishi/images/Authentication.png" height="30" width="26"/>
+                        <div class="auth_title">修改密码</div>
+                    </div>
+
+                    <div class="vbox">
+                        <div class="row-row">
+                            <div class="cell">
+                                <div class="cell-inner" style="overflow: visible">
+                                    <form class="form-horizontal valid-form" style="width: 600px; margin: 0 auto">
+                                        <div class="valid-form-item" style="left: 114px">
+                                            <div>
+                                                <span ng-cloak class="text-danger" ng-show="personPredata.username.length != 11 && personPredata.username.length > 0"><i class="fa fa-ban"></i> 11位手机号</span>
+                                            </div>
+                                            <div>
+                                                <span ng-cloak class="text-danger" ng-show="personPredata.password1.length <6 && personPredata.password1.length > 0"><i class="fa fa-ban"></i> 密码需要6位以上</span>
+                                            </div>
+                                            <div>
+                                                <span ng-cloak class="text-danger" ng-show="personPredata.password1.length >5 && personPredata.password1 != personPredata.password2"><i class="fa fa-check"></i> 密码不同</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-lg-4 control-label">手机</label>
+                                            <div class="col-lg-6">
+                                                <input class="form-control" name="username" ng-model="personPredata.username" placeholder="11位手机号" type="text" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-lg-4 control-label">验证码</label>
+                                            <div class="col-lg-3" style="width: 28%">
+                                                <input class="form-control" name="sms" ng-model="personPredata.sms"  placeholder="验证码" type="text">
+                                            </div>
+                                            <div ng-cloak class="col-lg-4" style="margin-left: -45px;">
+                                                <button style="width: 129px"  class="btn btn-default" ng-hide="personSendSMSPending"  ng-click="personSms()">获取短信验证码</button>
+                                                <button style="padding: 6px 0;width: 129px" ng-cloak  class="btn btn-default disabled" ng-show="personSendSMSPending" ng-bind="personSendSMSText"></button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-lg-4 control-label">登录密码</label>
+                                            <div class="col-lg-6">
+                                                <input class="form-control" name="password1"  ng-model="personPredata.password1"  placeholder="密码" type="password">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-lg-4 control-label">确认密码</label>
+                                            <div class="col-lg-6">
+                                                <input class="form-control" name="password2"  placeholder="确认密码"ng-model="personPredata.password2"   type="password">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-lg-4 control-label"></label>
+                                            <div class="col-lg-6">
+                                                &nbsp;
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-lg-offset-4 col-lg-6" style="margin-left: 209px;;margin-top: 15px">
+                                                <button ng-cloak style="width: 100%;background: #4777B6;border: 1px solid #4777b6;" ng-cloak  class="btn btn-sm btn-info disabled" ng-if="personPredata.username.length != 11 || personPredata.sms.length !=6 || personPredata.password1.length <6 ||  personPredata.password1 != personPredata.password2">确认</button>
+                                                <button ng-cloak style="width: 100%;background: #4777B6;border: 1px solid #4777b6;"  ng-click="personSubmit()" class="btn btn-sm btn-success" ng-if="personPredata.username.length == 11 && personPredata.sms.length == 6 && personPredata.password1.length >5  &&  personPredata.password1 == personPredata.password2">确认</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer_wrap">
+        <div class="pull-right">
+            杭州商道科技有限公司 &nbsp;
+            0571-56932575
+        </div>
+    </div>
+</div>
+<script>
+    app.controller("registerCtrl", [
+        "$scope", "$http", "$rootScope", '$state', '$interval', '$timeout', "$stateParams",
+        function ($scope, $http, $rootScope, $state, $interval, $timeout, $stateParams) {
+
+            $scope.personPredata = {
+                username:'',
+                sms:'',
+                password1:'',
+                password2:'',
+            }
+
+            $scope.personSeconds = 60;
+            $scope.personSendSMSText = '获取验证码';
+            $scope.personSendSMSPending = false;//验证码发送中的状态，60秒后可重发
+
+            $scope.GetQueryString = function(name) {
+
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
+
+                var r = window.location.search.substr(1).match(reg);
+
+                if (r!=null) return unescape(r[2]); return null;
+
+            }
+
+            $scope.personPredata.username = $rootScope.myinfo.username;
+            console.log( $scope.personPredata.username)
+
+            $scope.personSms = function(){
+                if($scope.personPredata.username.length !== 11){
+                    alert('请输入11位手机号，您输入'+ $scope.personPredata.username.length +'位');
+
+                } else{
+                    $http({method: "get", url: '/user/rePasswordSms?username=' + $scope.personPredata.username}).then(function (response) {
+                        var resResult = response.data;
+                        if (resResult.status == 'fail') {
+
+                        } else {
+
+                        }
+                    }, function(){
+
+                    });
+                    $scope.personSendSMSPending = true;
+                    $interval(function(){
+                        $scope.personSeconds --;
+                        $scope.personSendSMSText = $scope.personSeconds + '秒后可重新发送';
+                    },1000,60).then(function(){
+                        $scope.personSendSMSPending = false;
+                        $scope.personSendSMSText = '获取验证码';
+                        $scope.personSeconds = 60;
+                    });
+                }
+            }
+
+            $scope.personSubmit = function(){
+                $http({method: "post", url: '/user/rePassword', data:$scope.personPredata}).then(function (response) {
+                    console.log(response);
+                    var resResult = response.data;
+                    if (resResult.status == 'fail') {
+                        $rootScope.infoBox(resResult.message);
+                    } else {
+                        $rootScope.infoBox("密码修改成功，请登录！")
+                        setTimeout(function() {
+                            window.location.href= '/login';
+                        },1500)
+                    }
+
+                }, function(){
+
+                });
+            }
+        }
+    ]);</script>
+</script>

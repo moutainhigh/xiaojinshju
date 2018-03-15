@@ -518,7 +518,7 @@
       <workItem from="1519720684467" duration="4167000" />
       <workItem from="1519780851491" duration="7287000" />
       <workItem from="1519867014829" duration="4408000" />
-      <workItem from="1520214609114" duration="139000" />
+      <workItem from="1520214609114" duration="6299000" />
     </task>
     <task id="LOCAL-00001" summary="更新代码">
       <created>1520214650157</created>
@@ -531,10 +531,11 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="16001000" />
+    <option name="totallyTimeSpent" value="22161000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="3" y="11" width="1940" height="1040" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>loading</title>
+</head>
+<body>
+<script>
+    var layer;
+    layui.use('layer',function () {
+        layer = layui.layer;
+        layer.load(1, {
+            shade: [0.5,'#fff'] //0.1透明度的白色背景
+        });
+    });
+</script>
+</body>
+</html>
